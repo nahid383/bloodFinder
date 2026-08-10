@@ -39,6 +39,7 @@ function App() {
   return (
     <div className="bg-slate-800 min-h-screen">
       <div className="container mx-auto py-8">
+
         <Header />
 
         <DonorRegistry
@@ -46,7 +47,11 @@ function App() {
           bloodGroups={bloodGroups}
         />
 
-        <DonorList />
+        <DonorList
+          divisions={divisions}
+          bloodGroups={bloodGroups}
+        />
+
       </div>
     </div>
   );
