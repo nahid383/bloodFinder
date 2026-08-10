@@ -1,15 +1,55 @@
+import DonorList from "./components/Donorlist";
 import DonorRegistry from "./components/DonorRegistry";
 import Header from "./components/Header";
 
 function App() {
+  const divisions = [
+    "Barishal",
+    "Chattogram",
+    "Dhaka",
+    "Khulna",
+    "Mymensingh",
+    "Rajshahi",
+    "Rangpur",
+    "Sylhet",
+  ];
+
+  const bloodGroups = [
+    "O-",
+    "O+",
+    "A-",
+    "A+",
+    "B-",
+    "B+",
+    "AB-",
+    "AB+",
+  ];
+
+  const bloodCompatibility = {
+    "A+": ["A+", "AB+"],
+    "A-": ["A+", "A-", "AB+", "AB-"],
+    "B+": ["B+", "AB+"],
+    "B-": ["B+", "B-", "AB+", "AB-"],
+    "AB+": ["AB+"],
+    "AB-": ["AB+", "AB-"],
+    "O+": ["O+", "A+", "B+", "AB+"],
+    "O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+  };
+
   return (
     <div className="bg-slate-800 min-h-screen">
-      <div className="container mx-auto py-8 space-y-4">
-        <Header/>
-        <DonorRegistry/>
+      <div className="container mx-auto py-8">
+        <Header />
+
+        <DonorRegistry
+          divisions={divisions}
+          bloodGroups={bloodGroups}
+        />
+
+        <DonorList />
       </div>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

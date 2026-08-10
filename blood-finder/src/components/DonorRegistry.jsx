@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const DonorRegistry = () => {
+const DonorRegistry = ({ divisions, bloodGroups }) => {
   const {
     register,
     handleSubmit,
@@ -16,9 +16,17 @@ const DonorRegistry = () => {
   console.log(watch("name"));
 
   return (
-    <div className="card bg-slate-900 shadow-sm">
+    <div className="card bg-slate-900 shadow-sm mb-6">
       <div className="card-body">
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <h2 className="card-title text-white mb-4">
+          Donor Registration
+        </h2>
+
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="space-y-4"
+        >
+          {/* Name */}
           <input
             type="text"
             placeholder="Type your Name here"
@@ -26,8 +34,55 @@ const DonorRegistry = () => {
             {...register("name")}
           />
 
-          <button type="submit" className="btn">
-            Submit
+          {/* Blood Group */}
+          <select
+            defaultValue=""
+            className="select select-bordered w-full"
+            {...register("bloodGroup")}
+          >
+            <option value="" disabled>
+              Your Blood Group
+            </option>
+
+            {bloodGroups.map((bloodGroup) => (
+              <option key={bloodGroup} value={bloodGroup}>
+                {bloodGroup}
+              </option>
+            ))}
+          </select>
+
+          {/* Division */}
+          <select
+            defaultValue=""
+            className="select select-bordered w-full"
+            {...register("division")}
+          >
+            <option value="" disabled>
+              Your Division
+            </option>
+
+            {divisions.map((division) => (
+              <option key={division} value={division}>
+                {division}
+              </option>
+            ))}
+          </select>
+
+          {/* Phone */}
+          <input
+            type="text"
+            placeholder="Phone Number"
+            className="input w-full"
+            {...register("phone")}
+          />
+
+          {/* Submit */}
+          <button
+            type="submit"
+            className="btn w-full text-white border-0"
+            style={{ backgroundColor: "#605DFF" }}
+          >
+            Add Donor
           </button>
         </form>
       </div>
