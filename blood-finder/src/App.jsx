@@ -1,8 +1,12 @@
+import { useState } from "react";
 import DonorList from "./components/Donorlist";
 import DonorRegistry from "./components/DonorRegistry";
 import Header from "./components/Header";
 
 function App() {
+
+  const [donors, setDonors] = useState([]);
+
   const divisions = [
     "Barishal",
     "Chattogram",
@@ -45,11 +49,15 @@ function App() {
         <DonorRegistry
           divisions={divisions}
           bloodGroups={bloodGroups}
+          donors={donors}
+          setDonors={setDonors}
         />
 
         <DonorList
           divisions={divisions}
           bloodGroups={bloodGroups}
+          donors={donors}
+          setDonors={setDonors}
         />
 
       </div>

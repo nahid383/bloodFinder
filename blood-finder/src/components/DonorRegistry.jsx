@@ -1,7 +1,7 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 
-const DonorRegistry = ({ divisions, bloodGroups }) => {
+const DonorRegistry = ({ divisions, bloodGroups, donors, setDonors}) => {
   const {
     register,
     handleSubmit,
@@ -11,6 +11,15 @@ const DonorRegistry = ({ divisions, bloodGroups }) => {
 
   const onSubmit = (data) => {
     console.log(data);
+    const donor = {
+      ...data,
+      id: `NH-${donors.length+1+1000}`, 
+      available: true,
+    }
+
+    console.log(donor);
+
+    setDonors([...donors, donor]);
   };
 
   console.log(watch("name"));
@@ -18,7 +27,7 @@ const DonorRegistry = ({ divisions, bloodGroups }) => {
   return (
     <div className="card bg-slate-900 shadow-sm mb-6">
       <div className="card-body">
-        <h2 className="card-title text-white mb-4">
+        <h2 className="card-title font-bold text-white mb-4 text 3xl">
           Donor Registration
         </h2>
 

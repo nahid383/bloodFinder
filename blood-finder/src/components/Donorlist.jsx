@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
-const DonorList = ({ bloodGroups, divisions }) => {
-  const [donors, setDonors] = useState([]);
+const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
+ 
 
   // Filter states
   const [search, setSearch] = useState("");
