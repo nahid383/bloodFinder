@@ -1,66 +1,67 @@
 import React from "react";
-import { useForm } from "react-hook-form";
 
-const DonorRegistry = ({
-  divisions,
+const DonorFind = ({
+  requestedBloodData,
+  setRequestedBloodData,
   bloodGroups,
-  donors,
-  setDonors,
+  divisions,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+  // Handle form field changes
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  const onSubmit = (data) => {
-    console.log(data);
-
-    const donor = {
-      ...data,
-      id: `NH-${donors.length + 1001}`,
-      available: true,
-    };
-
-    console.log(donor);
-
-    setDonors([...donors, donor]);
+    setRequestedBloodData((previousData) => ({
+      ...previousData,
+      [name]: value,
+    }));
   };
 
-  console.log(watch("name"));
+  // Handle submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    console.log("Search Data:", requestedBloodData);
+  };
 
   return (
     <div className="card bg-slate-900 shadow-sm mb-6">
       <div className="card-body">
-        <h2 className="card-title font-bold text-white mb-4 text-3xl">
-          Donor Registration
+
+        <h2 className="card-title text-white mb-4">
+          Donor Request
         </h2>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={handleSubmit}
           className="space-y-4"
         >
+
           {/* Name */}
           <input
             type="text"
+            name="name"
             placeholder="Type your Name here"
             className="input w-full"
-            {...register("name")}
+            value={requestedBloodData.name}
+            onChange={handleChange}
           />
 
           {/* Blood Group */}
           <select
-            defaultValue=""
+            name="bloodGroup"
+            value={requestedBloodData.bloodGroup}
+            onChange={handleChange}
             className="select select-bordered w-full"
-            {...register("bloodGroup")}
           >
             <option value="" disabled>
               Your Blood Group
             </option>
 
             {bloodGroups.map((bloodGroup) => (
-              <option key={bloodGroup} value={bloodGroup}>
+              <option
+                key={bloodGroup}
+                value={bloodGroup}
+              >
                 {bloodGroup}
               </option>
             ))}
@@ -68,41 +69,40 @@ const DonorRegistry = ({
 
           {/* Division */}
           <select
-            defaultValue=""
+            name="division"
+            value={requestedBloodData.division}
+            onChange={handleChange}
             className="select select-bordered w-full"
-            {...register("division")}
           >
             <option value="" disabled>
               Your Division
             </option>
 
             {divisions.map((division) => (
-              <option key={division} value={division}>
+              <option
+                key={division}
+                value={division}
+              >
                 {division}
               </option>
             ))}
           </select>
 
-          {/* Phone */}
-          <input
-            type="text"
-            placeholder="Phone Number"
-            className="input w-full"
-            {...register("phone")}
-          />
-
-          {/* Submit */}
+          {/* Find Donor Button */}
           <button
             type="submit"
             className="btn w-full text-white border-0"
-            style={{ backgroundColor: "#605DFF" }}
+            style={{
+              backgroundColor: "#605DFF",
+            }}
           >
-            Add Donor
+            Find Donor
           </button>
+
         </form>
       </div>
     </div>
   );
 };
 
-export default DonorRegistry;
+export default DonorFind;

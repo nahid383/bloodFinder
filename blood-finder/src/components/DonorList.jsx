@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 
 const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
- 
-
   // Filter states
   const [search, setSearch] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
@@ -26,7 +24,7 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
     };
 
     loadDonors();
-  }, []);
+  }, [setDonors]);
 
   // Filter donors
   const filteredDonors = donors.filter((donor) => {
@@ -67,17 +65,13 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
   return (
     <div className="container mx-auto py-8">
 
-      {/* =========================
-          TITLE + DONOR COUNT
-      ========================== */}
+      {/* Title + Donor Count */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-
         <h2 className="text-3xl font-bold text-white">
           Donor List
         </h2>
 
         <div className="flex gap-2">
-
           {/* Total Donors */}
           <div className="badge badge-primary badge-lg">
             Total: {donors.length}
@@ -87,14 +81,10 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
           <div className="badge badge-secondary badge-lg">
             Showing: {filteredDonors.length}
           </div>
-
         </div>
-
       </div>
 
-      {/* =========================
-          SEARCH & FILTERS
-      ========================== */}
+      {/* Search & Filters */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
 
         {/* Search */}
@@ -142,19 +132,16 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
 
         {/* Reset */}
         <button
+          type="button"
           onClick={handleReset}
           className="btn btn-outline"
         >
           Reset Filters
         </button>
-
       </div>
 
-      {/* =========================
-          DONOR TABLE
-      ========================== */}
+      {/* Donor Table */}
       <div className="overflow-x-auto">
-
         <table className="table table-zebra">
 
           <thead>
@@ -169,22 +156,15 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
           </thead>
 
           <tbody>
-
             {filteredDonors.length > 0 ? (
-
               filteredDonors.map((donor) => (
-
                 <tr key={donor.id}>
 
                   {/* ID */}
-                  <th>
-                    {donor.id}
-                  </th>
+                  <th>{donor.id}</th>
 
                   {/* Name */}
-                  <td>
-                    {donor.name}
-                  </td>
+                  <td>{donor.name}</td>
 
                   {/* Blood Group */}
                   <td>
@@ -194,14 +174,10 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
                   </td>
 
                   {/* Division */}
-                  <td>
-                    {donor.division}
-                  </td>
+                  <td>{donor.division}</td>
 
                   {/* Phone */}
-                  <td>
-                    {donor.phone}
-                  </td>
+                  <td>{donor.phone}</td>
 
                   {/* Availability */}
                   <td>
@@ -217,11 +193,8 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
                   </td>
 
                 </tr>
-
               ))
-
             ) : (
-
               <tr>
                 <td
                   colSpan="6"
@@ -230,15 +203,11 @@ const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
                   No donors found
                 </td>
               </tr>
-
             )}
-
           </tbody>
 
         </table>
-
       </div>
-
     </div>
   );
 };
