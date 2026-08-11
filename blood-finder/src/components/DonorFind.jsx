@@ -27,6 +27,7 @@ const DonorFind = ({
     <div className="card bg-slate-900 shadow-sm mb-6">
       <div className="card-body">
 
+        {/* Title */}
         <h2 className="card-title text-white mb-4">
           Donor Request
         </h2>
@@ -35,7 +36,6 @@ const DonorFind = ({
           onSubmit={handleSubmit}
           className="space-y-4"
         >
-
           {/* Name */}
           <input
             type="text"
@@ -44,6 +44,7 @@ const DonorFind = ({
             className="input w-full"
             value={requestedBloodData.name}
             onChange={handleChange}
+            required
           />
 
           {/* Blood Group */}
@@ -52,6 +53,7 @@ const DonorFind = ({
             value={requestedBloodData.bloodGroup}
             onChange={handleChange}
             className="select select-bordered w-full"
+            required
           >
             <option value="" disabled>
               Your Blood Group
@@ -73,6 +75,7 @@ const DonorFind = ({
             value={requestedBloodData.division}
             onChange={handleChange}
             className="select select-bordered w-full"
+            required
           >
             <option value="" disabled>
               Your Division
@@ -98,7 +101,6 @@ const DonorFind = ({
           >
             Find Donor
           </button>
-
         </form>
       </div>
     </div>

@@ -21,7 +21,7 @@ function App() {
     "Sylhet",
   ];
 
-  // Blood groups
+  // Blood Groups
   const bloodGroups = [
     "O-",
     "O+",
@@ -33,16 +33,23 @@ function App() {
     "AB+",
   ];
 
-  // Blood compatibility
+  // Recipient Blood Group -> Compatible Donor Blood Groups
   const bloodCompatibility = {
-    "A+": ["A+", "AB+"],
-    "A-": ["A+", "A-", "AB+", "AB-"],
-    "B+": ["B+", "AB+"],
-    "B-": ["B+", "B-", "AB+", "AB-"],
-    "AB+": ["AB+"],
-    "AB-": ["AB+", "AB-"],
-    "O+": ["O+", "A+", "B+", "AB+"],
-    "O-": [
+    "O-": ["O-"],
+
+    "O+": ["O-", "O+"],
+
+    "A-": ["O-", "A-"],
+
+    "A+": ["O-", "O+", "A-", "A+"],
+
+    "B-": ["O-", "B-"],
+
+    "B+": ["O-", "O+", "B-", "B+"],
+
+    "AB-": ["O-", "A-", "B-", "AB-"],
+
+    "AB+": [
       "O-",
       "O+",
       "A-",
@@ -61,15 +68,14 @@ function App() {
     division: "",
   });
 
-  // Generate matched donors with dynamic score
+  // Generate matched donors
   const matchedDonors = () => {
-    // If no blood group is selected,
-    // don't show any result
+    // If no blood group is selected
     if (!requestedBloodData.bloodGroup) {
       return [];
     }
 
-    // Get compatible donor blood groups
+    // Get compatible donor groups
     const compatibleGroups =
       bloodCompatibility[requestedBloodData.bloodGroup];
 
@@ -86,21 +92,41 @@ function App() {
         compatibleGroups.includes(donor.bloodGroup)
       )
 
-      // Calculate score
+      // Calculate matching score
       .map((donor) => {
-        let score = 50;
+        let score = 0;
 
-        // Same division = +30
+        // --------------------------------
+        // 1. Blood Group Match
+        // --------------------------------
+
+        // Exact blood group match
+        if (
+          donor.bloodGroup === requestedBloodData.bloodGroup
+        ) {
+          score += 60;
+        } else {
+          // Compatible but different blood group
+          score += 40;
+        }
+
+        // --------------------------------
+        // 2. Same Division
+        // --------------------------------
+
         if (
           requestedBloodData.division &&
           donor.division === requestedBloodData.division
         ) {
-          score += 30;
+          score += 25;
         }
 
-        // Available = +20
+        // --------------------------------
+        // 3. Availability
+        // --------------------------------
+
         if (donor.available === true) {
-          score += 20;
+          score += 15;
         }
 
         return {
@@ -109,27 +135,45 @@ function App() {
         };
       })
 
-      // Highest score first
-      .sort((a, b) => b.score - a.score)
+      // Sort from best to worst
+      .sort((a, b) => {
+        // Higher score first
+        if (b.score !== a.score) {
+          return b.score - a.score;
+        }
 
-      // Show only top 5
-      .slice(0, 5);
+        // Same division first
+        const aSameDivision =
+          a.division === requestedBloodData.division;
+
+        const bSameDivision =
+          b.division === requestedBloodData.division;
+
+        if (aSameDivision !== bSameDivision) {
+          return bSameDivision - aSameDivision;
+        }
+
+        // Exact blood group first
+        const aExact =
+          a.bloodGroup === requestedBloodData.bloodGroup;
+
+        const bExact =
+          b.bloodGroup === requestedBloodData.bloodGroup;
+
+        return bExact - aExact;
+      })
+
+      // Show best 10
+      .slice(0, 10);
 
     return matched;
   };
 
-  // Calculate matched donors once
+  // Calculate matching results
   const matchedDonorsData = matchedDonors();
 
-  console.log(
-    "Requested Blood Data:",
-    requestedBloodData
-  );
-
-  console.log(
-    "Matched Donors:",
-    matchedDonorsData
-  );
+  console.log("Requested Blood Data:", requestedBloodData);
+  console.log("Matched Donors:", matchedDonorsData);
 
   return (
     <div className="bg-slate-800 min-h-screen">

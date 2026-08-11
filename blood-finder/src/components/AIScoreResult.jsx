@@ -123,8 +123,15 @@ const AIScoreResult = ({ matchedDonorsData }) => {
                     </button>
 
                   </div>
-
                 </div>
+
+                {/* Score Bar */}
+                <progress
+                  className="progress progress-primary w-full mt-4"
+                  value={donor.score}
+                  max="100"
+                ></progress>
+
               </div>
             ))}
 
