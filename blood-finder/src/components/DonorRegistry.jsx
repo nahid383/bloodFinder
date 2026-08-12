@@ -1,5 +1,6 @@
 import React from "react";
 import { useForm } from "react-hook-form";
+import { supabase } from "../supabaseClient";
 
 const DonorRegistry = ({
   divisions,
@@ -14,21 +15,53 @@ const DonorRegistry = ({
     formState: { errors },
   } = useForm();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    console.log("Form data:", data);
 
+    // Keep the previous ID system
     const donor = {
-      ...data,
       id: `NH-${donors.length + 1001}`,
+      name: data.name,
+      blood_group: data.bloodGroup,
+      division: data.division,
+      phone: data.phone,
       available: true,
     };
 
-    console.log(donor);
+    console.log("Donor to insert:", donor);
 
-    setDonors([...donors, donor]);
+    // Insert into Supabase
+    const { data: newDonor, error } = await supabase
+      .from("donors")
+      .insert(donor)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Error registering donor:", error);
+      return;
+    }
+
+    console.log("New donor from Supabase:", newDonor);
+
+    // Convert Supabase format back to React format
+    const formattedDonor = {
+      id: newDonor.id,
+      name: newDonor.name,
+      bloodGroup: newDonor.blood_group,
+      division: newDonor.division,
+      phone: newDonor.phone,
+      available: newDonor.available,
+    };
+
+    // Update React state
+    setDonors((previousDonors) => [
+      ...previousDonors,
+      formattedDonor,
+    ]);
   };
 
-  console.log(watch("name"));
+  console.log("Name:", watch("name"));
 
   return (
     <div className="card bg-slate-900 shadow-sm mb-6">

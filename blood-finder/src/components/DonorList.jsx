@@ -1,30 +1,15 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-const DonorList = ({ bloodGroups, divisions, donors, setDonors }) => {
+const DonorList = ({
+  bloodGroups,
+  divisions,
+  donors,
+  setDonors,
+}) => {
   // Filter states
   const [search, setSearch] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [division, setDivision] = useState("");
-
-  // Load donor data
-  useEffect(() => {
-    const loadDonors = async () => {
-      try {
-        const res = await fetch("/data.json");
-
-        if (!res.ok) {
-          throw new Error("Failed to load donor data");
-        }
-
-        const data = await res.json();
-        setDonors(data);
-      } catch (error) {
-        console.error("Error loading donors:", error);
-      }
-    };
-
-    loadDonors();
-  }, [setDonors]);
 
   // Filter donors
   const filteredDonors = donors.filter((donor) => {

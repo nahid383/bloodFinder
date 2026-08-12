@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+import { supabase } from "./supabaseClient";
 
 import DonorList from "./components/DonorList";
 import DonorRegistry from "./components/DonorRegistry";
@@ -7,7 +9,38 @@ import Header from "./components/Header";
 import AIScoreResult from "./components/AIScoreResult";
 
 function App() {
+  // Donors are now loaded from Supabase
   const [donors, setDonors] = useState([]);
+
+  // Fetch donors from Supabase when the app starts
+  useEffect(() => {
+    const fetchDonors = async () => {
+      const { data, error } = await supabase
+        .from("donors")
+        .select("*");
+
+      if (error) {
+        console.error("Error fetching donors:", error);
+        return;
+      }
+
+      // Convert Supabase format to React format
+      const formattedDonors = data.map((donor) => ({
+        id: donor.id,
+        name: donor.name,
+        bloodGroup: donor.blood_group,
+        division: donor.division,
+        phone: donor.phone,
+        available: donor.available,
+      }));
+
+      setDonors(formattedDonors);
+
+      console.log("Donors loaded from Supabase:", formattedDonors);
+    };
+
+    fetchDonors();
+  }, []);
 
   // Divisions
   const divisions = [
@@ -70,7 +103,7 @@ function App() {
 
   // Generate matched donors
   const matchedDonors = () => {
-    // If no blood group is selected
+    // No blood group selected
     if (!requestedBloodData.bloodGroup) {
       return [];
     }
@@ -135,7 +168,7 @@ function App() {
         };
       })
 
-      // Sort from best to worst
+      // Sort best donors first
       .sort((a, b) => {
         // Higher score first
         if (b.score !== a.score) {
@@ -163,7 +196,7 @@ function App() {
         return bExact - aExact;
       })
 
-      // Show best 10
+      // Show best 10 donors
       .slice(0, 10);
 
     return matched;
@@ -178,7 +211,6 @@ function App() {
   return (
     <div className="bg-slate-800 min-h-screen">
       <div className="container mx-auto py-8">
-
         {/* Header */}
         <Header />
 
@@ -210,7 +242,6 @@ function App() {
           donors={donors}
           setDonors={setDonors}
         />
-
       </div>
     </div>
   );
