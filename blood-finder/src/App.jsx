@@ -1,48 +1,40 @@
 import { useEffect, useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import { supabase } from "./supabaseClient";
 
+// Components
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 import DonorList from "./components/DonorList";
 import DonorRegistry from "./components/DonorRegistry";
 import DonorFind from "./components/DonorFind";
-import Header from "./components/Header";
 import AIScoreResult from "./components/AIScoreResult";
 
+// Pages
+import Home from "./pages/Home";
+
 function App() {
-  // Donors are now loaded from Supabase
+  // ==============================
+  // DONOR STATE
+  // ==============================
+
   const [donors, setDonors] = useState([]);
 
-  // Fetch donors from Supabase when the app starts
-  useEffect(() => {
-    const fetchDonors = async () => {
-      const { data, error } = await supabase
-        .from("donors")
-        .select("*");
+  // ==============================
+  // BLOOD REQUEST STATE
+  // ==============================
 
-      if (error) {
-        console.error("Error fetching donors:", error);
-        return;
-      }
+  const [requestedBloodData, setRequestedBloodData] = useState({
+    name: "",
+    bloodGroup: "",
+    division: "",
+  });
 
-      // Convert Supabase format to React format
-      const formattedDonors = data.map((donor) => ({
-        id: donor.id,
-        name: donor.name,
-        bloodGroup: donor.blood_group,
-        division: donor.division,
-        phone: donor.phone,
-        available: donor.available,
-      }));
+  // ==============================
+  // DIVISIONS
+  // ==============================
 
-      setDonors(formattedDonors);
-
-      console.log("Donors loaded from Supabase:", formattedDonors);
-    };
-
-    fetchDonors();
-  }, []);
-
-  // Divisions
   const divisions = [
     "Barishal",
     "Chattogram",
@@ -54,7 +46,10 @@ function App() {
     "Sylhet",
   ];
 
-  // Blood Groups
+  // ==============================
+  // BLOOD GROUPS
+  // ==============================
+
   const bloodGroups = [
     "O-",
     "O+",
@@ -66,7 +61,11 @@ function App() {
     "AB+",
   ];
 
-  // Recipient Blood Group -> Compatible Donor Blood Groups
+  // ==============================
+  // BLOOD COMPATIBILITY
+  // Recipient → Compatible Donors
+  // ==============================
+
   const bloodCompatibility = {
     "O-": ["O-"],
 
@@ -94,21 +93,56 @@ function App() {
     ],
   };
 
-  // Blood request state
-  const [requestedBloodData, setRequestedBloodData] = useState({
-    name: "",
-    bloodGroup: "",
-    division: "",
-  });
+  // ==============================
+  // FETCH DONORS FROM SUPABASE
+  // ==============================
 
-  // Generate matched donors
+  useEffect(() => {
+    const fetchDonors = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("donors")
+          .select("*");
+
+        if (error) {
+          console.error("Error fetching donors:", error);
+          return;
+        }
+
+        const formattedDonors = (data || []).map((donor) => ({
+          id: donor.id,
+          name: donor.name,
+          bloodGroup: donor.blood_group,
+          division: donor.division,
+          phone: donor.phone,
+          available: donor.available,
+        }));
+
+        setDonors(formattedDonors);
+
+        console.log(
+          "Donors loaded from Supabase:",
+          formattedDonors
+        );
+      } catch (error) {
+        console.error("Unexpected error:", error);
+      }
+    };
+
+    fetchDonors();
+  }, []);
+
+  // ==============================
+  // FIND MATCHED DONORS
+  // ==============================
+
   const matchedDonors = () => {
     // No blood group selected
     if (!requestedBloodData.bloodGroup) {
       return [];
     }
 
-    // Get compatible donor groups
+    // Get compatible blood groups
     const compatibleGroups =
       bloodCompatibility[requestedBloodData.bloodGroup];
 
@@ -129,24 +163,16 @@ function App() {
       .map((donor) => {
         let score = 0;
 
-        // --------------------------------
-        // 1. Blood Group Match
-        // --------------------------------
-
-        // Exact blood group match
+        // Exact blood group
         if (
           donor.bloodGroup === requestedBloodData.bloodGroup
         ) {
           score += 60;
         } else {
-          // Compatible but different blood group
           score += 40;
         }
 
-        // --------------------------------
-        // 2. Same Division
-        // --------------------------------
-
+        // Same division
         if (
           requestedBloodData.division &&
           donor.division === requestedBloodData.division
@@ -154,10 +180,7 @@ function App() {
           score += 25;
         }
 
-        // --------------------------------
-        // 3. Availability
-        // --------------------------------
-
+        // Available
         if (donor.available === true) {
           score += 15;
         }
@@ -168,9 +191,8 @@ function App() {
         };
       })
 
-      // Sort best donors first
+      // Sort by score
       .sort((a, b) => {
-        // Higher score first
         if (b.score !== a.score) {
           return b.score - a.score;
         }
@@ -196,54 +218,113 @@ function App() {
         return bExact - aExact;
       })
 
-      // Show best 10 donors
+      // Maximum 10 donors
       .slice(0, 10);
 
     return matched;
   };
 
-  // Calculate matching results
   const matchedDonorsData = matchedDonors();
 
-  console.log("Requested Blood Data:", requestedBloodData);
-  console.log("Matched Donors:", matchedDonorsData);
-
   return (
-    <div className="bg-slate-800 min-h-screen">
-      <div className="container mx-auto py-8">
-        {/* Header */}
+    <BrowserRouter>
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+
+        {/* ==============================
+            HEADER
+        ============================== */}
+
         <Header />
 
-        {/* Donor Registration */}
-        <DonorRegistry
-          divisions={divisions}
-          bloodGroups={bloodGroups}
-          donors={donors}
-          setDonors={setDonors}
-        />
+        {/* ==============================
+            MAIN CONTENT
+        ============================== */}
 
-        {/* Find Donor */}
-        <DonorFind
-          bloodGroups={bloodGroups}
-          divisions={divisions}
-          requestedBloodData={requestedBloodData}
-          setRequestedBloodData={setRequestedBloodData}
-        />
+        <main className="flex-1">
+          <Routes>
 
-        {/* AI Matching Results */}
-        <AIScoreResult
-          matchedDonorsData={matchedDonorsData}
-        />
+            {/* ==========================
+                HOME
+            ========================== */}
 
-        {/* All Donors */}
-        <DonorList
-          divisions={divisions}
-          bloodGroups={bloodGroups}
-          donors={donors}
-          setDonors={setDonors}
-        />
+            <Route
+              path="/"
+              element={
+                <Home donorCount={donors.length} />
+              }
+            />
+
+            {/* ==========================
+                REGISTER
+            ========================== */}
+
+            <Route
+              path="/register"
+              element={
+                <div className="container mx-auto px-4 py-8">
+                  <DonorRegistry
+                    divisions={divisions}
+                    bloodGroups={bloodGroups}
+                    donors={donors}
+                    setDonors={setDonors}
+                  />
+                </div>
+              }
+            />
+
+            {/* ==========================
+                DONOR LIST
+            ========================== */}
+
+            <Route
+              path="/donors"
+              element={
+                <div className="container mx-auto px-4 py-8">
+                  <DonorList
+                    divisions={divisions}
+                    bloodGroups={bloodGroups}
+                    donors={donors}
+                    setDonors={setDonors}
+                  />
+                </div>
+              }
+            />
+
+            {/* ==========================
+                FIND DONOR
+            ========================== */}
+
+            <Route
+              path="/find"
+              element={
+                <div className="container mx-auto px-4 py-8 space-y-8">
+                  <DonorFind
+                    bloodGroups={bloodGroups}
+                    divisions={divisions}
+                    requestedBloodData={requestedBloodData}
+                    setRequestedBloodData={
+                      setRequestedBloodData
+                    }
+                  />
+
+                  <AIScoreResult
+                    matchedDonorsData={matchedDonorsData}
+                  />
+                </div>
+              }
+            />
+
+          </Routes>
+        </main>
+
+        {/* ==============================
+            FOOTER
+        ============================== */}
+
+        <Footer />
+
       </div>
-    </div>
+    </BrowserRouter>
   );
 }
 
