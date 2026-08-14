@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const DonorFind = ({
   requestedBloodData,
   setRequestedBloodData,
   bloodGroups,
   divisions,
+  matchedDonorsCount = 0,
 }) => {
+  const [showResultHint, setShowResultHint] = useState(false);
+
   // =========================
   // HANDLE INPUT CHANGES
   // =========================
@@ -20,13 +23,42 @@ const DonorFind = ({
   };
 
   // =========================
+  // SHOW RESULT UPDATE
+  // =========================
+
+  useEffect(() => {
+    if (
+      requestedBloodData.bloodGroup ||
+      requestedBloodData.division
+    ) {
+      setShowResultHint(true);
+    }
+  }, [
+    requestedBloodData.bloodGroup,
+    requestedBloodData.division,
+  ]);
+
+  // =========================
   // HANDLE SUBMIT
   // =========================
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    console.log("Search Data:", requestedBloodData);
+    setShowResultHint(true);
+
+    // Small delay so the results are already rendered
+    setTimeout(() => {
+      const resultSection =
+        document.getElementById("donor-results");
+
+      if (resultSection) {
+        resultSection.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+      }
+    }, 150);
   };
 
   return (
@@ -61,7 +93,7 @@ const DonorFind = ({
           MAIN SEARCH CARD
       ========================= */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl border border-slate-100">
+      <div className="grid grid-cols-1 lg:grid-cols-5 bg-white rounded-2xl sm:rounded-[2rem] overflow-hidden shadow-xl border border-slate-100">
 
         {/* =========================
             LEFT INFORMATION PANEL
@@ -82,20 +114,16 @@ const DonorFind = ({
               {/* Icon */}
 
               <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-6 sm:mb-7">
-
                 <span className="text-3xl sm:text-4xl">
                   🩸
                 </span>
-
               </div>
 
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-tight">
-
                 Someone needs
                 <span className="block text-indigo-200">
                   your help.
                 </span>
-
               </h2>
 
               <p className="text-indigo-100 mt-4 sm:mt-5 leading-relaxed text-sm sm:text-base">
@@ -111,7 +139,6 @@ const DonorFind = ({
             <div className="mt-8 sm:mt-10 space-y-4">
 
               <div className="flex items-center gap-3">
-
                 <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0">
                   ✓
                 </div>
@@ -119,11 +146,9 @@ const DonorFind = ({
                 <p className="text-white text-sm sm:text-base">
                   Find compatible blood groups
                 </p>
-
               </div>
 
               <div className="flex items-center gap-3">
-
                 <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0">
                   ✓
                 </div>
@@ -131,11 +156,9 @@ const DonorFind = ({
                 <p className="text-white text-sm sm:text-base">
                   Prioritize donors near you
                 </p>
-
               </div>
 
               <div className="flex items-center gap-3">
-
                 <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center shrink-0">
                   ✓
                 </div>
@@ -143,13 +166,11 @@ const DonorFind = ({
                 <p className="text-white text-sm sm:text-base">
                   Get the best matches first
                 </p>
-
               </div>
 
             </div>
 
           </div>
-
         </div>
 
         {/* =========================
@@ -238,18 +259,9 @@ const DonorFind = ({
                   focus:ring-2
                   focus:ring-indigo-100
                 "
-                style={{
-                  color: "#0f172a",
-                  backgroundColor: "#ffffff",
-                  WebkitAppearance: "auto",
-                }}
               >
 
-                <option
-                  value=""
-                  disabled
-                  className="bg-white text-slate-900"
-                >
+                <option value="" disabled>
                   Select blood group
                 </option>
 
@@ -257,7 +269,6 @@ const DonorFind = ({
                   <option
                     key={bloodGroup}
                     value={bloodGroup}
-                    className="bg-white text-slate-900"
                   >
                     {bloodGroup}
                   </option>
@@ -295,18 +306,9 @@ const DonorFind = ({
                   focus:ring-2
                   focus:ring-indigo-100
                 "
-                style={{
-                  color: "#0f172a",
-                  backgroundColor: "#ffffff",
-                  WebkitAppearance: "auto",
-                }}
               >
 
-                <option
-                  value=""
-                  disabled
-                  className="bg-white text-slate-900"
-                >
+                <option value="" disabled>
                   Select your division
                 </option>
 
@@ -314,7 +316,6 @@ const DonorFind = ({
                   <option
                     key={division}
                     value={division}
-                    className="bg-white text-slate-900"
                   >
                     {division}
                   </option>
@@ -323,6 +324,60 @@ const DonorFind = ({
               </select>
 
             </div>
+
+            {/* =========================
+                LIVE MATCH STATUS
+            ========================= */}
+
+            {showResultHint &&
+              requestedBloodData.bloodGroup &&
+              requestedBloodData.division && (
+                <div
+                  className={`rounded-xl px-4 py-4 border ${
+                    matchedDonorsCount > 0
+                      ? "bg-green-50 border-green-200"
+                      : "bg-amber-50 border-amber-200"
+                  }`}
+                >
+
+                  <div className="flex items-start gap-3">
+
+                    <div className="text-xl shrink-0">
+                      {matchedDonorsCount > 0 ? "✓" : "ℹ️"}
+                    </div>
+
+                    <div>
+
+                      {matchedDonorsCount > 0 ? (
+                        <>
+                          <p className="font-bold text-green-800">
+                            {matchedDonorsCount} compatible donor
+                            {matchedDonorsCount !== 1 ? "s" : ""} found
+                          </p>
+
+                          <p className="text-sm text-green-700 mt-1">
+                            Your matches are ready below. Tap the
+                            button to view them.
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-bold text-amber-800">
+                            No compatible donors found
+                          </p>
+
+                          <p className="text-sm text-amber-700 mt-1">
+                            Try another blood group or division.
+                          </p>
+                        </>
+                      )}
+
+                    </div>
+
+                  </div>
+
+                </div>
+              )}
 
             {/* =========================
                 INFO BOX
@@ -383,6 +438,16 @@ const DonorFind = ({
             >
               Find Compatible Donors →
             </button>
+
+            {/* Mobile hint */}
+
+            {showResultHint &&
+              requestedBloodData.bloodGroup &&
+              requestedBloodData.division && (
+                <p className="text-center text-xs text-slate-400 sm:hidden">
+                  ↓ Your donor results are shown below ↓
+                </p>
+              )}
 
           </form>
 

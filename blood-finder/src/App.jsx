@@ -298,6 +298,7 @@ function App() {
                       setRequestedBloodData={
                         setRequestedBloodData
                       }
+                      matchedDonorsCount={matchedDonorsData.length}
                     />
 
                     <AIScoreResult

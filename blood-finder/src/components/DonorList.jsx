@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const DonorList = ({
   bloodGroups,
@@ -6,17 +6,20 @@ const DonorList = ({
   donors,
   setDonors,
 }) => {
-  // ==============================
+  // =========================
   // FILTER STATES
-  // ==============================
+  // =========================
 
   const [search, setSearch] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [division, setDivision] = useState("");
 
-  // ==============================
+  // Result section reference
+  const resultsRef = useRef(null);
+
+  // =========================
   // FILTER DONORS
-  // ==============================
+  // =========================
 
   const filteredDonors = donors.filter((donor) => {
     const searchText = search.toLowerCase().trim();
@@ -24,14 +27,18 @@ const DonorList = ({
     const name = donor.name?.toLowerCase() || "";
     const phone = donor.phone?.toString() || "";
 
+    // Search by name or phone
     const matchesSearch =
+      searchText === "" ||
       name.includes(searchText) ||
       phone.includes(searchText);
 
+    // Blood group
     const matchesBloodGroup =
       bloodGroup === "" ||
       donor.bloodGroup === bloodGroup;
 
+    // Division
     const matchesDivision =
       division === "" ||
       donor.division === division;
@@ -43,9 +50,29 @@ const DonorList = ({
     );
   });
 
-  // ==============================
+  // =========================
+  // CHECK WHETHER FILTER IS ACTIVE
+  // =========================
+
+  const hasActiveFilter =
+    search.trim() !== "" ||
+    bloodGroup !== "" ||
+    division !== "";
+
+  // =========================
+  // SCROLL TO RESULTS
+  // =========================
+
+  const scrollToResults = () => {
+    resultsRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  };
+
+  // =========================
   // RESET FILTERS
-  // ==============================
+  // =========================
 
   const handleReset = () => {
     setSearch("");
@@ -53,95 +80,87 @@ const DonorList = ({
     setDivision("");
   };
 
+  // =========================
+  // OPTIONAL:
+  // SHOW RESULT MESSAGE AFTER
+  // FILTER CHANGES
+  // =========================
+
+  useEffect(() => {
+    if (!hasActiveFilter) return;
+
+    // Don't automatically scroll.
+    // The user can decide when to view results.
+  }, [search, bloodGroup, division]);
+
   return (
     <div className="w-full">
 
-      {/* =========================================
-          HEADER
-      ========================================= */}
+      {/* =========================
+          PAGE HEADER
+      ========================= */}
 
-      <div className="mb-6 sm:mb-8">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
 
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+          <p className="text-sm font-semibold text-indigo-400 mb-1">
+            BLOODFINDER
+          </p>
 
-          <div>
-            <p className="text-indigo-400 text-xs sm:text-sm font-bold uppercase tracking-widest mb-2">
-              BloodFinder
-            </p>
+          <h2 className="text-3xl sm:text-4xl font-black text-white">
+            Donor List
+          </h2>
 
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">
-              Donor List
-            </h2>
+          <p className="text-slate-400 mt-2 text-sm sm:text-base">
+            Find available blood donors across Bangladesh.
+          </p>
+        </div>
 
-            <p className="text-slate-400 text-sm sm:text-base mt-2">
-              Find registered blood donors by name, blood group,
-              phone number or division.
-            </p>
+        {/* =========================
+            COUNTERS
+        ========================= */}
+
+        <div className="flex flex-wrap gap-2">
+
+          <div className="px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-sm font-semibold">
+            Total: {donors.length}
           </div>
 
-          {/* Donor statistics */}
-
-          <div className="flex flex-wrap gap-2">
-
-            <div className="px-3 sm:px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
-              <p className="text-[10px] sm:text-xs text-slate-400">
-                Total Donors
-              </p>
-
-              <p className="text-lg sm:text-xl font-bold text-indigo-400">
-                {donors.length}
-              </p>
-            </div>
-
-            <div className="px-3 sm:px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
-              <p className="text-[10px] sm:text-xs text-slate-400">
-                Showing
-              </p>
-
-              <p className="text-lg sm:text-xl font-bold text-emerald-400">
-                {filteredDonors.length}
-              </p>
-            </div>
-
+          <div className="px-4 py-2 rounded-xl bg-green-500/10 border border-green-500/20 text-green-300 text-sm font-semibold">
+            Showing: {filteredDonors.length}
           </div>
 
         </div>
 
       </div>
 
-      {/* =========================================
-          FILTER SECTION
-      ========================================= */}
+      {/* =========================
+          FILTER CARD
+      ========================= */}
 
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl">
+      <div className="bg-white rounded-2xl shadow-xl border border-slate-100 p-4 sm:p-6 mb-6">
 
-        <div className="flex items-center gap-2 mb-5">
+        <div className="mb-5">
 
-          <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
-            <span className="text-indigo-400 text-lg">
-              🔎
-            </span>
-          </div>
+          <h3 className="text-lg font-bold text-slate-900">
+            Find a donor
+          </h3>
 
-          <div>
-            <h3 className="font-semibold text-white">
-              Search & Filter
-            </h3>
-
-            <p className="text-xs text-slate-500">
-              Narrow down the donor list
-            </p>
-          </div>
+          <p className="text-sm text-slate-500 mt-1">
+            Search by name, phone number, blood group or division.
+          </p>
 
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
 
-          {/* Search */}
+          {/* =========================
+              SEARCH
+          ========================= */}
 
-          <div className="sm:col-span-2 lg:col-span-1">
+          <div className="md:col-span-1">
 
-            <label className="block text-xs font-medium text-slate-400 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Search
             </label>
 
@@ -152,11 +171,11 @@ const DonorList = ({
               onChange={(e) => setSearch(e.target.value)}
               className="
                 input
+                input-bordered
                 w-full
-                bg-slate-800
-                border-slate-700
-                text-white
-                placeholder:text-slate-500
+                bg-white
+                text-slate-900
+                border-slate-300
                 focus:border-indigo-500
                 focus:outline-none
               "
@@ -164,11 +183,13 @@ const DonorList = ({
 
           </div>
 
-          {/* Blood Group */}
+          {/* =========================
+              BLOOD GROUP
+          ========================= */}
 
           <div>
 
-            <label className="block text-xs font-medium text-slate-400 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Blood Group
             </label>
 
@@ -179,9 +200,9 @@ const DonorList = ({
                 select
                 select-bordered
                 w-full
-                bg-slate-800
-                border-slate-700
-                text-white
+                bg-white
+                text-slate-900
+                border-slate-300
                 focus:border-indigo-500
                 focus:outline-none
               "
@@ -192,7 +213,11 @@ const DonorList = ({
               </option>
 
               {bloodGroups.map((group) => (
-                <option key={group} value={group}>
+                <option
+                  key={group}
+                  value={group}
+                  className="bg-white text-slate-900"
+                >
                   {group}
                 </option>
               ))}
@@ -201,11 +226,13 @@ const DonorList = ({
 
           </div>
 
-          {/* Division */}
+          {/* =========================
+              DIVISION
+          ========================= */}
 
           <div>
 
-            <label className="block text-xs font-medium text-slate-400 mb-2">
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
               Division
             </label>
 
@@ -216,9 +243,9 @@ const DonorList = ({
                 select
                 select-bordered
                 w-full
-                bg-slate-800
-                border-slate-700
-                text-white
+                bg-white
+                text-slate-900
+                border-slate-300
                 focus:border-indigo-500
                 focus:outline-none
               "
@@ -229,7 +256,11 @@ const DonorList = ({
               </option>
 
               {divisions.map((div) => (
-                <option key={div} value={div}>
+                <option
+                  key={div}
+                  value={div}
+                  className="bg-white text-slate-900"
+                >
                   {div}
                 </option>
               ))}
@@ -238,7 +269,9 @@ const DonorList = ({
 
           </div>
 
-          {/* Reset */}
+          {/* =========================
+              RESET
+          ========================= */}
 
           <div className="flex items-end">
 
@@ -247,12 +280,11 @@ const DonorList = ({
               onClick={handleReset}
               className="
                 btn
+                btn-outline
                 w-full
-                bg-slate-800
-                hover:bg-slate-700
-                border-slate-700
-                text-slate-300
-                hover:text-white
+                border-slate-300
+                text-slate-700
+                hover:bg-slate-100
               "
             >
               Reset Filters
@@ -264,211 +296,370 @@ const DonorList = ({
 
       </div>
 
-      {/* =========================================
-          MOBILE DONOR CARDS
-          Visible below md
-      ========================================= */}
+      {/* ==================================================
+          MOBILE RESULT NOTIFICATION
+      ================================================== */}
 
-      <div className="md:hidden space-y-4">
+      {hasActiveFilter && (
+        <div className="md:hidden mb-6">
 
-        {filteredDonors.length > 0 ? (
+          {filteredDonors.length > 0 ? (
 
-          filteredDonors.map((donor) => (
+            <div className="
+              rounded-2xl
+              bg-indigo-50
+              border
+              border-indigo-100
+              p-4
+              shadow-sm
+            ">
 
-            <div
-              key={donor.id}
-              className="
-                bg-slate-900
-                border
-                border-slate-800
-                rounded-2xl
-                p-4
-                shadow-lg
-              "
-            >
+              <div className="flex items-start gap-3">
 
-              {/* Top section */}
+                <div className="
+                  w-10
+                  h-10
+                  rounded-full
+                  bg-indigo-100
+                  flex
+                  items-center
+                  justify-center
+                  shrink-0
+                ">
+                  🔎
+                </div>
 
-              <div className="flex items-start justify-between gap-3">
+                <div className="flex-1">
 
-                <div className="flex items-center gap-3 min-w-0">
+                  <p className="font-bold text-indigo-900">
+                    {filteredDonors.length}{" "}
+                    {filteredDonors.length === 1
+                      ? "donor"
+                      : "donors"}{" "}
+                    found
+                  </p>
 
-                  <div className="
-                    w-11
-                    h-11
-                    shrink-0
-                    rounded-xl
-                    bg-red-500/10
-                    border
-                    border-red-500/20
-                    flex
-                    items-center
-                    justify-center
-                  ">
-                    <span className="text-red-400 font-bold">
-                      {donor.bloodGroup}
-                    </span>
+                  <p className="text-sm text-indigo-700 mt-1">
+                    Your search results are below. Scroll down
+                    to view the matching donors.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={scrollToResults}
+                    className="
+                      mt-3
+                      inline-flex
+                      items-center
+                      justify-center
+                      px-4
+                      py-2
+                      rounded-xl
+                      bg-indigo-600
+                      hover:bg-indigo-700
+                      text-white
+                      text-sm
+                      font-semibold
+                      transition
+                    "
+                  >
+                    View Results ↓
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ) : (
+
+            <div className="
+              rounded-2xl
+              bg-red-50
+              border
+              border-red-100
+              p-4
+            ">
+
+              <div className="flex items-start gap-3">
+
+                <div className="
+                  w-10
+                  h-10
+                  rounded-full
+                  bg-red-100
+                  flex
+                  items-center
+                  justify-center
+                  shrink-0
+                ">
+                  !
+                </div>
+
+                <div>
+
+                  <p className="font-bold text-red-900">
+                    No donors found
+                  </p>
+
+                  <p className="text-sm text-red-700 mt-1">
+                    No donor matches your selected blood group,
+                    division or search.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="
+                      mt-3
+                      text-sm
+                      font-semibold
+                      text-red-700
+                      underline
+                    "
+                  >
+                    Clear filters
+                  </button>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          )}
+
+        </div>
+      )}
+
+      {/* =========================
+          RESULTS SECTION
+      ========================= */}
+
+      <div
+        ref={resultsRef}
+        className="scroll-mt-24"
+      >
+
+        {/* Results heading */}
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+
+          <div>
+
+            <h3 className="text-xl sm:text-2xl font-bold text-white">
+              Matching Donors
+            </h3>
+
+            <p className="text-sm text-slate-400 mt-1">
+              {filteredDonors.length} donor
+              {filteredDonors.length !== 1 ? "s" : ""} found
+            </p>
+
+          </div>
+
+        </div>
+
+        {/* =========================
+            MOBILE DONOR CARDS
+        ========================= */}
+
+        <div className="md:hidden space-y-4">
+
+          {filteredDonors.length > 0 ? (
+
+            filteredDonors.map((donor) => (
+
+              <div
+                key={donor.id}
+                className="
+                  bg-white
+                  rounded-2xl
+                  p-5
+                  shadow-lg
+                  border
+                  border-slate-100
+                "
+              >
+
+                {/* Name + ID */}
+
+                <div className="flex items-start justify-between gap-3">
+
+                  <div>
+
+                    <h4 className="text-lg font-bold text-slate-900">
+                      {donor.name}
+                    </h4>
+
+                    <p className="text-xs text-slate-400 mt-1">
+                      ID: {donor.id}
+                    </p>
+
                   </div>
 
-                  <div className="min-w-0">
+                  <span className="
+                    px-3
+                    py-1.5
+                    rounded-lg
+                    bg-red-100
+                    text-red-600
+                    font-bold
+                    text-sm
+                  ">
+                    {donor.bloodGroup}
+                  </span>
 
-                    <h3 className="font-bold text-white truncate">
-                      {donor.name}
-                    </h3>
+                </div>
 
-                    <p className="text-xs text-slate-500 mt-1">
-                      ID: {donor.id}
+                {/* Information */}
+
+                <div className="grid grid-cols-2 gap-3 mt-5">
+
+                  <div className="bg-slate-50 rounded-xl p-3">
+
+                    <p className="text-xs text-slate-400">
+                      Division
+                    </p>
+
+                    <p className="font-semibold text-slate-800 mt-1">
+                      {donor.division}
+                    </p>
+
+                  </div>
+
+                  <div className="bg-slate-50 rounded-xl p-3">
+
+                    <p className="text-xs text-slate-400">
+                      Phone
+                    </p>
+
+                    <p className="font-semibold text-slate-800 mt-1 break-all">
+                      {donor.phone}
                     </p>
 
                   </div>
 
                 </div>
 
-                {donor.available ? (
-                  <span className="
-                    shrink-0
-                    px-2.5
-                    py-1
-                    rounded-full
-                    bg-emerald-500/10
-                    border
-                    border-emerald-500/20
-                    text-emerald-400
-                    text-xs
-                    font-semibold
-                  ">
-                    Available
+                {/* Availability */}
+
+                <div className="mt-4 flex items-center justify-between">
+
+                  <span className="text-sm text-slate-500">
+                    Availability
                   </span>
-                ) : (
-                  <span className="
-                    shrink-0
-                    px-2.5
-                    py-1
-                    rounded-full
-                    bg-slate-800
-                    border
-                    border-slate-700
-                    text-slate-400
-                    text-xs
-                    font-semibold
-                  ">
-                    Unavailable
-                  </span>
+
+                  {donor.available ? (
+
+                    <span className="
+                      px-3
+                      py-1.5
+                      rounded-full
+                      bg-green-100
+                      text-green-700
+                      text-xs
+                      font-bold
+                    ">
+                      ● Available
+                    </span>
+
+                  ) : (
+
+                    <span className="
+                      px-3
+                      py-1.5
+                      rounded-full
+                      bg-slate-100
+                      text-slate-500
+                      text-xs
+                      font-bold
+                    ">
+                      Unavailable
+                    </span>
+
+                  )}
+
+                </div>
+
+                {/* Call button */}
+
+                {donor.phone && (
+                  <a
+                    href={`tel:${donor.phone}`}
+                    className="
+                      btn
+                      w-full
+                      mt-4
+                      bg-indigo-600
+                      hover:bg-indigo-700
+                      text-white
+                      border-0
+                    "
+                  >
+                    📞 Contact Donor
+                  </a>
                 )}
 
               </div>
 
-              {/* Information */}
+            ))
 
-              <div className="grid grid-cols-2 gap-3 mt-5">
+          ) : (
 
-                <div className="bg-slate-800/70 rounded-xl p-3">
+            <div className="
+              bg-white
+              rounded-2xl
+              p-8
+              text-center
+            ">
 
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">
-                    Division
-                  </p>
-
-                  <p className="text-sm font-medium text-slate-200 mt-1">
-                    {donor.division}
-                  </p>
-
-                </div>
-
-                <div className="bg-slate-800/70 rounded-xl p-3">
-
-                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">
-                    Phone
-                  </p>
-
-                  <p className="text-sm font-medium text-slate-200 mt-1 break-all">
-                    {donor.phone}
-                  </p>
-
-                </div>
-
+              <div className="text-4xl mb-3">
+                🩸
               </div>
 
+              <h4 className="text-lg font-bold text-slate-900">
+                No donors found
+              </h4>
+
+              <p className="text-sm text-slate-500 mt-2">
+                Try another blood group or division.
+              </p>
+
             </div>
 
-          ))
+          )}
 
-        ) : (
+        </div>
 
-          <div className="
-            bg-slate-900
-            border
-            border-slate-800
-            rounded-2xl
-            py-12
-            px-5
-            text-center
-          ">
+        {/* =========================
+            DESKTOP TABLE
+        ========================= */}
 
-            <div className="text-4xl mb-4">
-              🩸
-            </div>
+        <div className="
+          hidden
+          md:block
+          overflow-x-auto
+          rounded-2xl
+          bg-white
+          shadow-xl
+          border
+          border-slate-100
+        ">
 
-            <h3 className="text-lg font-semibold text-white">
-              No donors found
-            </h3>
-
-            <p className="text-sm text-slate-500 mt-2">
-              Try changing your search or filter options.
-            </p>
-
-          </div>
-
-        )}
-
-      </div>
-
-      {/* =========================================
-          DESKTOP TABLE
-          Visible from md
-      ========================================= */}
-
-      <div className="
-        hidden
-        md:block
-        bg-slate-900
-        border
-        border-slate-800
-        rounded-2xl
-        overflow-hidden
-        shadow-xl
-      ">
-
-        <div className="overflow-x-auto">
-
-          <table className="table w-full">
+          <table className="table">
 
             <thead>
 
-              <tr className="border-b border-slate-800">
+              <tr className="text-slate-600">
 
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  ID
-                </th>
-
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  Name
-                </th>
-
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  Blood Group
-                </th>
-
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  Division
-                </th>
-
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  Phone
-                </th>
-
-                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
-                  Availability
-                </th>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Blood Group</th>
+                <th>Division</th>
+                <th>Phone</th>
+                <th>Available</th>
 
               </tr>
 
@@ -482,97 +673,42 @@ const DonorList = ({
 
                   <tr
                     key={donor.id}
-                    className="
-                      border-b
-                      border-slate-800/70
-                      hover:bg-slate-800/50
-                      transition
-                    "
+                    className="text-slate-800"
                   >
 
-                    {/* ID */}
+                    <th>{donor.id}</th>
 
-                    <th className="text-slate-400 font-medium">
-                      {donor.id}
-                    </th>
-
-                    {/* Name */}
-
-                    <td className="text-white font-medium">
+                    <td className="font-semibold">
                       {donor.name}
                     </td>
 
-                    {/* Blood Group */}
-
                     <td>
 
-                      <span className="
-                        inline-flex
-                        items-center
-                        justify-center
-                        min-w-[48px]
-                        px-3
-                        py-1.5
-                        rounded-lg
-                        bg-red-500/10
-                        border
-                        border-red-500/20
-                        text-red-400
-                        font-bold
-                        text-sm
-                      ">
+                      <span className="badge badge-error">
                         {donor.bloodGroup}
                       </span>
 
                     </td>
 
-                    {/* Division */}
-
-                    <td className="text-slate-300">
+                    <td>
                       {donor.division}
                     </td>
 
-                    {/* Phone */}
-
-                    <td className="text-slate-300">
+                    <td>
                       {donor.phone}
                     </td>
-
-                    {/* Availability */}
 
                     <td>
 
                       {donor.available ? (
 
-                        <span className="
-                          inline-flex
-                          px-3
-                          py-1.5
-                          rounded-full
-                          bg-emerald-500/10
-                          border
-                          border-emerald-500/20
-                          text-emerald-400
-                          text-xs
-                          font-semibold
-                        ">
+                        <span className="badge badge-success">
                           Available
                         </span>
 
                       ) : (
 
-                        <span className="
-                          inline-flex
-                          px-3
-                          py-1.5
-                          rounded-full
-                          bg-slate-800
-                          border
-                          border-slate-700
-                          text-slate-400
-                          text-xs
-                          font-semibold
-                        ">
+                        <span className="badge badge-ghost">
                           Unavailable
                         </span>
 
@@ -590,20 +726,9 @@ const DonorList = ({
 
                   <td
                     colSpan="6"
-                    className="text-center py-14"
+                    className="text-center py-10 text-slate-500"
                   >
-
-                    <div className="text-4xl mb-3">
-                      🩸
-                    </div>
-
-                    <p className="text-lg font-semibold text-white">
-                      No donors found
-                    </p>
-
-                    <p className="text-sm text-slate-500 mt-1">
-                      Try changing your search or filter options.
-                    </p>
+                    No donors found.
 
                   </td>
 
