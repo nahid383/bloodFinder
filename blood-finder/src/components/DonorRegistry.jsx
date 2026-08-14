@@ -19,74 +19,157 @@ const DonorRegistry = ({
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // =========================================================
+  // SUBMIT DONOR REGISTRATION
+  // =========================================================
+
   const onSubmit = async (data) => {
     setLoading(true);
     setSuccessMessage("");
     setErrorMessage("");
 
     try {
-      /*
-       * Your Supabase id column is TEXT and NOT NULL.
-       * So we must create the ID ourselves.
-       *
-       * Example:
-       * NH-1755089234567
-       */
+      // =====================================================
+      // CLEAN PHONE NUMBER
+      // =====================================================
+
+      const phone = data.phone.trim();
+
+      // =====================================================
+      // CHECK DUPLICATE PHONE NUMBER
+      // =====================================================
+
+      const {
+        data: existingDonor,
+        error: checkError,
+      } = await supabase
+        .from("donors")
+        .select("id, name, phone")
+        .eq("phone", phone)
+        .maybeSingle();
+
+      if (checkError) {
+        console.error(
+          "Phone check error:",
+          checkError
+        );
+
+        setErrorMessage(
+          "Unable to verify the phone number. Please try again."
+        );
+
+        return;
+      }
+
+      // =====================================================
+      // DUPLICATE PHONE FOUND
+      // =====================================================
+
+      if (existingDonor) {
+        setErrorMessage(
+          "This mobile number is already registered as a donor."
+        );
+
+        return;
+      }
+
+      // =====================================================
+      // CREATE UNIQUE DONOR ID
+      // =====================================================
+
       const donorId = `NH-${Date.now()}`;
+
+      // =====================================================
+      // PREPARE DONOR DATA
+      // =====================================================
 
       const donorData = {
         id: donorId,
         name: data.name.trim(),
         blood_group: data.bloodGroup,
         division: data.division,
-        phone: data.phone.trim(),
+        phone: phone,
         available: true,
       };
 
-      // Insert into Supabase
-      const { error } = await supabase
+      // =====================================================
+      // INSERT INTO SUPABASE
+      // =====================================================
+
+      const {
+        data: insertedDonor,
+        error: insertError,
+      } = await supabase
         .from("donors")
-        .insert([donorData]);
+        .insert([donorData])
+        .select()
+        .single();
 
-      if (error) {
-        console.error("Supabase registration error:", error);
+      // =====================================================
+      // INSERT ERROR
+      // =====================================================
 
-        setErrorMessage(
-          error.message || "Registration failed. Please try again."
+      if (insertError) {
+        console.error(
+          "Supabase registration error:",
+          insertError
         );
+
+        // PostgreSQL duplicate error
+        if (insertError.code === "23505") {
+          setErrorMessage(
+            "This mobile number is already registered as a donor."
+          );
+        } else {
+          setErrorMessage(
+            insertError.message ||
+              "Registration failed. Please try again."
+          );
+        }
 
         return;
       }
 
-      /*
-       * Convert Supabase format to React format
-       */
+      // =====================================================
+      // FORMAT DONOR FOR REACT
+      // =====================================================
+
       const formattedDonor = {
-        id: donorData.id,
-        name: donorData.name,
-        bloodGroup: donorData.blood_group,
-        division: donorData.division,
-        phone: donorData.phone,
-        available: donorData.available,
+        id: insertedDonor.id,
+        name: insertedDonor.name,
+        bloodGroup: insertedDonor.blood_group,
+        division: insertedDonor.division,
+        phone: insertedDonor.phone,
+        available: insertedDonor.available,
       };
 
-      /*
-       * Immediately update donor list
-       */
-      setDonors((prevDonors) => [
-        ...prevDonors,
+      // =====================================================
+      // UPDATE LOCAL DONOR STATE
+      // =====================================================
+
+      setDonors((previousDonors) => [
+        ...previousDonors,
         formattedDonor,
       ]);
 
-      // Success message
+      // =====================================================
+      // SUCCESS MESSAGE
+      // =====================================================
+
       setSuccessMessage(
         "Registration done successfully! 🎉"
       );
 
-      // Clear form
+      // =====================================================
+      // RESET FORM
+      // =====================================================
+
       reset();
 
-      // Remove success message after 4 seconds
+      // =====================================================
+      // REMOVE SUCCESS MESSAGE
+      // =====================================================
+
       setTimeout(() => {
         setSuccessMessage("");
       }, 4000);
@@ -95,6 +178,7 @@ const DonorRegistry = ({
         "New donor registered:",
         formattedDonor
       );
+
     } catch (error) {
       console.error(
         "Unexpected registration error:",
@@ -105,15 +189,22 @@ const DonorRegistry = ({
         error.message ||
           "Something went wrong. Please try again."
       );
+
     } finally {
       setLoading(false);
     }
   };
 
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
     <section className="max-w-6xl mx-auto py-10 md:py-16">
 
-      {/* ================= HEADER ================= */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
 
       <div className="text-center mb-10">
 
@@ -136,11 +227,15 @@ const DonorRegistry = ({
 
       </div>
 
-      {/* ================= MAIN CARD ================= */}
+      {/* =====================================================
+          MAIN CARD
+      ===================================================== */}
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white rounded-[2rem] overflow-hidden shadow-xl border border-slate-100">
 
-        {/* ================= LEFT INFO ================= */}
+        {/* ===================================================
+            LEFT INFORMATION PANEL
+        =================================================== */}
 
         <div className="lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-[#605DFF] to-[#4037c9] p-8 md:p-10">
 
@@ -165,10 +260,13 @@ const DonorRegistry = ({
               </div>
 
               <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
+
                 Your blood can
+
                 <span className="block text-indigo-200">
                   save a life.
                 </span>
+
               </h2>
 
               <p className="text-indigo-100 mt-5 leading-relaxed">
@@ -224,7 +322,9 @@ const DonorRegistry = ({
 
         </div>
 
-        {/* ================= RIGHT FORM ================= */}
+        {/* ===================================================
+            RIGHT FORM
+        =================================================== */}
 
         <div className="lg:col-span-3 p-8 md:p-10">
 
@@ -240,7 +340,9 @@ const DonorRegistry = ({
 
           </div>
 
-          {/* SUCCESS MESSAGE */}
+          {/* =================================================
+              SUCCESS MESSAGE
+          ================================================= */}
 
           {successMessage && (
             <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-4 text-green-700 flex items-center gap-3">
@@ -250,6 +352,7 @@ const DonorRegistry = ({
               </div>
 
               <div>
+
                 <p className="font-semibold">
                   Registration Successful
                 </p>
@@ -257,12 +360,15 @@ const DonorRegistry = ({
                 <p className="text-sm">
                   {successMessage}
                 </p>
+
               </div>
 
             </div>
           )}
 
-          {/* ERROR MESSAGE */}
+          {/* =================================================
+              ERROR MESSAGE
+          ================================================= */}
 
           {errorMessage && (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-700 flex items-center gap-3">
@@ -272,6 +378,7 @@ const DonorRegistry = ({
               </div>
 
               <div>
+
                 <p className="font-semibold">
                   Registration Failed
                 </p>
@@ -279,19 +386,24 @@ const DonorRegistry = ({
                 <p className="text-sm">
                   {errorMessage}
                 </p>
+
               </div>
 
             </div>
           )}
 
-          {/* FORM */}
+          {/* =================================================
+              FORM
+          ================================================= */}
 
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-5"
           >
 
-            {/* NAME */}
+            {/* =================================================
+                NAME
+            ================================================= */}
 
             <div>
 
@@ -309,6 +421,7 @@ const DonorRegistry = ({
                 }`}
                 {...register("name", {
                   required: "Name is required",
+
                   minLength: {
                     value: 2,
                     message:
@@ -325,7 +438,9 @@ const DonorRegistry = ({
 
             </div>
 
-            {/* BLOOD GROUP + DIVISION */}
+            {/* =================================================
+                BLOOD GROUP + DIVISION
+            ================================================= */}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
 
@@ -419,7 +534,9 @@ const DonorRegistry = ({
 
             </div>
 
-            {/* PHONE */}
+            {/* =================================================
+                PHONE
+            ================================================= */}
 
             <div>
 
@@ -429,6 +546,8 @@ const DonorRegistry = ({
 
               <input
                 type="tel"
+                inputMode="numeric"
+                maxLength={11}
                 placeholder="01XXXXXXXXX"
                 className={`input input-bordered w-full h-12 ${
                   errors.phone
@@ -436,13 +555,18 @@ const DonorRegistry = ({
                     : ""
                 }`}
                 {...register("phone", {
+
                   required:
                     "Phone number is required",
+
                   pattern: {
-                    value:
-                      /^01[3-9]\d{8}$/,
+                    value: /^01[3-9]\d{8}$/,
                     message:
                       "Enter a valid Bangladeshi phone number",
+                  },
+
+                  onChange: () => {
+                    setErrorMessage("");
                   },
                 })}
               />
@@ -455,7 +579,9 @@ const DonorRegistry = ({
 
             </div>
 
-            {/* INFO */}
+            {/* =================================================
+                PRIVACY INFO
+            ================================================= */}
 
             <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
 
@@ -467,12 +593,29 @@ const DonorRegistry = ({
 
             </div>
 
-            {/* SUBMIT */}
+            {/* =================================================
+                SUBMIT BUTTON
+            ================================================= */}
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-13 rounded-xl text-white font-bold text-base border-0 transition-all duration-200 shadow-lg shadow-indigo-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="
+                w-full
+                h-13
+                rounded-xl
+                text-white
+                font-bold
+                text-base
+                border-0
+                transition-all
+                duration-200
+                shadow-lg
+                shadow-indigo-200
+                hover:-translate-y-0.5
+                disabled:opacity-60
+                disabled:cursor-not-allowed
+              "
               style={{
                 background:
                   "linear-gradient(135deg, #605DFF, #4037c9)",
@@ -499,15 +642,20 @@ const DonorRegistry = ({
 
       </div>
 
-      {/* ================= BOTTOM TEXT ================= */}
+      {/* =====================================================
+          BOTTOM TEXT
+      ===================================================== */}
 
       <div className="text-center mt-8">
 
         <p className="text-sm text-slate-400">
+
           Already registered?
+
           <span className="text-indigo-600 font-semibold ml-1">
             Thank you for being a lifesaver ❤️
           </span>
+
         </p>
 
       </div>
