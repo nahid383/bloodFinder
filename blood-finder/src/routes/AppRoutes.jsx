@@ -1,4 +1,4 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Link } from "react-router-dom";
 
 import Home from "../pages/Home";
 import DonorList from "../components/DonorList";
@@ -18,15 +18,19 @@ const AppRoutes = ({
   return (
     <Routes>
 
-      {/* Home */}
+      {/* =========================================
+          HOME
+      ========================================= */}
+
       <Route
         path="/"
-        element={
-          <Home donorCount={donors.length} />
-        }
+        element={<Home donorCount={donors.length} />}
       />
 
-      {/* Donor Registration */}
+      {/* =========================================
+          DONOR REGISTRATION
+      ========================================= */}
+
       <Route
         path="/register"
         element={
@@ -41,7 +45,10 @@ const AppRoutes = ({
         }
       />
 
-      {/* Donor List */}
+      {/* =========================================
+          DONOR LIST
+      ========================================= */}
+
       <Route
         path="/donors"
         element={
@@ -56,13 +63,18 @@ const AppRoutes = ({
         }
       />
 
-      {/* Find Donor */}
+      {/* =========================================
+          FIND DONOR
+      ========================================= */}
+
       <Route
         path="/find"
         element={
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
 
             <div className="space-y-6 sm:space-y-8">
+
+              {/* Search Form */}
 
               <DonorFind
                 bloodGroups={bloodGroups}
@@ -71,9 +83,13 @@ const AppRoutes = ({
                 setRequestedBloodData={setRequestedBloodData}
               />
 
-              <AIScoreResult
-                matchedDonorsData={matchedDonorsData}
-              />
+              {/* Results */}
+
+              <div id="donor-results">
+                <AIScoreResult
+                  matchedDonorsData={matchedDonorsData}
+                />
+              </div>
 
             </div>
 
@@ -81,29 +97,52 @@ const AppRoutes = ({
         }
       />
 
-      {/* 404 */}
+      {/* =========================================
+          404 PAGE
+      ========================================= */}
+
       <Route
         path="*"
         element={
           <div className="min-h-[60vh] flex items-center justify-center px-4">
+
             <div className="text-center">
 
-              <h1 className="text-6xl font-black text-slate-900">
+              <h1 className="text-6xl sm:text-7xl font-black text-slate-900">
                 404
               </h1>
 
-              <p className="text-slate-500 mt-3">
+              <p className="text-slate-500 mt-3 text-lg">
                 Page not found
               </p>
 
-              <a
-                href="/"
-                className="inline-block mt-6 px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold"
+              <p className="text-slate-400 text-sm mt-2">
+                The page you are looking for doesn't exist.
+              </p>
+
+              <Link
+                to="/"
+                className="
+                  inline-flex
+                  items-center
+                  justify-center
+                  mt-6
+                  px-6
+                  py-3
+                  rounded-xl
+                  bg-indigo-600
+                  hover:bg-indigo-700
+                  text-white
+                  font-semibold
+                  transition
+                  active:scale-95
+                "
               >
-                Go Home
-              </a>
+                ← Go Home
+              </Link>
 
             </div>
+
           </div>
         }
       />
