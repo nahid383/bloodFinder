@@ -63,7 +63,6 @@ function App() {
 
   // ==============================
   // BLOOD COMPATIBILITY
-  // Recipient → Compatible Donors
   // ==============================
 
   const bloodCompatibility = {
@@ -99,34 +98,25 @@ function App() {
 
   useEffect(() => {
     const fetchDonors = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("donors")
-          .select("*");
+      const { data, error } = await supabase
+        .from("donors")
+        .select("*");
 
-        if (error) {
-          console.error("Error fetching donors:", error);
-          return;
-        }
-
-        const formattedDonors = (data || []).map((donor) => ({
-          id: donor.id,
-          name: donor.name,
-          bloodGroup: donor.blood_group,
-          division: donor.division,
-          phone: donor.phone,
-          available: donor.available,
-        }));
-
-        setDonors(formattedDonors);
-
-        console.log(
-          "Donors loaded from Supabase:",
-          formattedDonors
-        );
-      } catch (error) {
-        console.error("Unexpected error:", error);
+      if (error) {
+        console.error("Error fetching donors:", error);
+        return;
       }
+
+      const formattedDonors = (data || []).map((donor) => ({
+        id: donor.id,
+        name: donor.name,
+        bloodGroup: donor.blood_group,
+        division: donor.division,
+        phone: donor.phone,
+        available: donor.available,
+      }));
+
+      setDonors(formattedDonors);
     };
 
     fetchDonors();
@@ -137,12 +127,10 @@ function App() {
   // ==============================
 
   const matchedDonors = () => {
-    // No blood group selected
     if (!requestedBloodData.bloodGroup) {
       return [];
     }
 
-    // Get compatible blood groups
     const compatibleGroups =
       bloodCompatibility[requestedBloodData.bloodGroup];
 
@@ -154,18 +142,19 @@ function App() {
       // Only available donors
       .filter((donor) => donor.available === true)
 
-      // Only compatible blood groups
+      // Compatible blood groups
       .filter((donor) =>
         compatibleGroups.includes(donor.bloodGroup)
       )
 
-      // Calculate matching score
+      // Calculate score
       .map((donor) => {
         let score = 0;
 
         // Exact blood group
         if (
-          donor.bloodGroup === requestedBloodData.bloodGroup
+          donor.bloodGroup ===
+          requestedBloodData.bloodGroup
         ) {
           score += 60;
         } else {
@@ -191,7 +180,7 @@ function App() {
         };
       })
 
-      // Sort by score
+      // Highest score first
       .sort((a, b) => {
         if (b.score !== a.score) {
           return b.score - a.score;
@@ -218,7 +207,7 @@ function App() {
         return bExact - aExact;
       })
 
-      // Maximum 10 donors
+      // Show maximum 10
       .slice(0, 10);
 
     return matched;
@@ -228,7 +217,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-slate-950 text-white flex flex-col">
+      <div className="min-h-screen w-full bg-slate-950 text-white flex flex-col overflow-x-hidden">
 
         {/* ==============================
             HEADER
@@ -240,7 +229,8 @@ function App() {
             MAIN CONTENT
         ============================== */}
 
-        <main className="flex-1">
+        <main className="flex-1 w-full">
+
           <Routes>
 
             {/* ==========================
@@ -261,7 +251,7 @@ function App() {
             <Route
               path="/register"
               element={
-                <div className="container mx-auto px-4 py-8">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
                   <DonorRegistry
                     divisions={divisions}
                     bloodGroups={bloodGroups}
@@ -279,7 +269,7 @@ function App() {
             <Route
               path="/donors"
               element={
-                <div className="container mx-auto px-4 py-8">
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
                   <DonorList
                     divisions={divisions}
                     bloodGroups={bloodGroups}
@@ -297,24 +287,31 @@ function App() {
             <Route
               path="/find"
               element={
-                <div className="container mx-auto px-4 py-8 space-y-8">
-                  <DonorFind
-                    bloodGroups={bloodGroups}
-                    divisions={divisions}
-                    requestedBloodData={requestedBloodData}
-                    setRequestedBloodData={
-                      setRequestedBloodData
-                    }
-                  />
+                <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
 
-                  <AIScoreResult
-                    matchedDonorsData={matchedDonorsData}
-                  />
+                  <div className="space-y-6 sm:space-y-10">
+
+                    <DonorFind
+                      bloodGroups={bloodGroups}
+                      divisions={divisions}
+                      requestedBloodData={requestedBloodData}
+                      setRequestedBloodData={
+                        setRequestedBloodData
+                      }
+                    />
+
+                    <AIScoreResult
+                      matchedDonorsData={matchedDonorsData}
+                    />
+
+                  </div>
+
                 </div>
               }
             />
 
           </Routes>
+
         </main>
 
         {/* ==============================

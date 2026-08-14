@@ -1,514 +1,516 @@
 import React, { useState } from "react";
-import { useForm } from "react-hook-form";
-import { supabase } from "../supabaseClient";
 
-const DonorRegistry = ({
-  divisions,
+const DonorList = ({
   bloodGroups,
+  divisions,
   donors,
   setDonors,
 }) => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm();
+  const [search, setSearch] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [division, setDivision] = useState("");
 
-  const [successMessage, setSuccessMessage] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  // ==============================
+  // FILTER DONORS
+  // ==============================
 
-  const onSubmit = async (data) => {
-    setLoading(true);
-    setSuccessMessage("");
-    setErrorMessage("");
+  const filteredDonors = donors.filter((donor) => {
+    const searchText = search.toLowerCase().trim();
 
-    try {
-      /*
-       * Your Supabase id column is TEXT and NOT NULL.
-       * So we must create the ID ourselves.
-       *
-       * Example:
-       * NH-1755089234567
-       */
-      const donorId = `NH-${Date.now()}`;
+    const name = donor.name?.toLowerCase() || "";
+    const phone = donor.phone?.toString() || "";
+    const id = donor.id?.toString().toLowerCase() || "";
 
-      const donorData = {
-        id: donorId,
-        name: data.name.trim(),
-        blood_group: data.bloodGroup,
-        division: data.division,
-        phone: data.phone.trim(),
-        available: true,
-      };
+    const matchesSearch =
+      name.includes(searchText) ||
+      phone.includes(searchText) ||
+      id.includes(searchText);
 
-      // Insert into Supabase
-      const { error } = await supabase
-        .from("donors")
-        .insert([donorData]);
+    const matchesBloodGroup =
+      bloodGroup === "" ||
+      donor.bloodGroup === bloodGroup;
 
-      if (error) {
-        console.error("Supabase registration error:", error);
+    const matchesDivision =
+      division === "" ||
+      donor.division === division;
 
-        setErrorMessage(
-          error.message || "Registration failed. Please try again."
-        );
+    return (
+      matchesSearch &&
+      matchesBloodGroup &&
+      matchesDivision
+    );
+  });
 
-        return;
-      }
+  // ==============================
+  // RESET
+  // ==============================
 
-      /*
-       * Convert Supabase format to React format
-       */
-      const formattedDonor = {
-        id: donorData.id,
-        name: donorData.name,
-        bloodGroup: donorData.blood_group,
-        division: donorData.division,
-        phone: donorData.phone,
-        available: donorData.available,
-      };
-
-      /*
-       * Immediately update donor list
-       */
-      setDonors((prevDonors) => [
-        ...prevDonors,
-        formattedDonor,
-      ]);
-
-      // Success message
-      setSuccessMessage(
-        "Registration done successfully! 🎉"
-      );
-
-      // Clear form
-      reset();
-
-      // Remove success message after 4 seconds
-      setTimeout(() => {
-        setSuccessMessage("");
-      }, 4000);
-
-      console.log(
-        "New donor registered:",
-        formattedDonor
-      );
-    } catch (error) {
-      console.error(
-        "Unexpected registration error:",
-        error
-      );
-
-      setErrorMessage(
-        error.message ||
-          "Something went wrong. Please try again."
-      );
-    } finally {
-      setLoading(false);
-    }
+  const handleReset = () => {
+    setSearch("");
+    setBloodGroup("");
+    setDivision("");
   };
 
   return (
-    <section className="max-w-6xl mx-auto py-10 md:py-16">
+    <section className="max-w-7xl mx-auto py-8 md:py-14">
 
-      {/* ================= HEADER ================= */}
+      {/* ==============================
+          PAGE HEADER
+      ============================== */}
 
-      <div className="text-center mb-10">
+      <div className="mb-8">
 
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 text-red-600 text-sm font-semibold mb-5">
-
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100 text-red-600 text-sm font-semibold mb-4">
           <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-
-          Become a lifesaver
-
+          Blood donor network
         </div>
 
-        <h1 className="text-4xl md:text-5xl font-black text-slate-950">
-          Become a Blood Donor
-        </h1>
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
 
-        <p className="max-w-2xl mx-auto mt-4 text-slate-500 text-lg leading-relaxed">
-          Register yourself as a blood donor and help someone
-          find the blood they need when it matters most.
-        </p>
+          <div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-slate-950 tracking-tight">
+              Find a Blood Donor
+            </h1>
+
+            <p className="text-slate-500 mt-3 text-base md:text-lg max-w-2xl leading-relaxed">
+              Browse registered donors and find someone who
+              matches your blood group and location.
+            </p>
+          </div>
+
+          {/* Statistics */}
+
+          <div className="flex gap-3">
+
+            <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 shadow-sm">
+              <p className="text-xs text-slate-500">
+                Total donors
+              </p>
+
+              <p className="text-2xl font-black text-slate-900">
+                {donors.length}
+              </p>
+            </div>
+
+            <div className="bg-indigo-50 border border-indigo-100 rounded-2xl px-4 py-3">
+              <p className="text-xs text-indigo-500">
+                Showing
+              </p>
+
+              <p className="text-2xl font-black text-indigo-700">
+                {filteredDonors.length}
+              </p>
+            </div>
+
+          </div>
+
+        </div>
 
       </div>
 
-      {/* ================= MAIN CARD ================= */}
+      {/* ==============================
+          FILTER PANEL
+      ============================== */}
 
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white rounded-[2rem] overflow-hidden shadow-xl border border-slate-100">
+      <div className="bg-white border border-slate-200 rounded-3xl p-4 sm:p-6 shadow-sm mb-8">
 
-        {/* ================= LEFT INFO ================= */}
+        <div className="flex items-center justify-between mb-5">
 
-        <div className="lg:col-span-2 relative overflow-hidden bg-gradient-to-br from-[#605DFF] to-[#4037c9] p-8 md:p-10">
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">
+              Search & Filter
+            </h2>
 
-          {/* Decorations */}
-
-          <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-white/10" />
-
-          <div className="absolute -bottom-28 -left-24 w-80 h-80 rounded-full bg-white/10" />
-
-          <div className="relative z-10 h-full flex flex-col justify-between">
-
-            <div>
-
-              {/* Blood icon */}
-
-              <div className="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center mb-7">
-
-                <span className="text-4xl">
-                  🩸
-                </span>
-
-              </div>
-
-              <h2 className="text-3xl md:text-4xl font-bold text-white leading-tight">
-                Your blood can
-                <span className="block text-indigo-200">
-                  save a life.
-                </span>
-              </h2>
-
-              <p className="text-indigo-100 mt-5 leading-relaxed">
-                Every registered donor brings someone one
-                step closer to finding the blood they need.
-              </p>
-
-            </div>
-
-            {/* Benefits */}
-
-            <div className="mt-10 space-y-4">
-
-              <div className="flex items-center gap-3">
-
-                <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-                  ✓
-                </div>
-
-                <p className="text-white">
-                  Help people in emergencies
-                </p>
-
-              </div>
-
-              <div className="flex items-center gap-3">
-
-                <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-                  ✓
-                </div>
-
-                <p className="text-white">
-                  Connect with people nearby
-                </p>
-
-              </div>
-
-              <div className="flex items-center gap-3">
-
-                <div className="w-9 h-9 rounded-full bg-white/15 flex items-center justify-center">
-                  ✓
-                </div>
-
-                <p className="text-white">
-                  Make a real difference
-                </p>
-
-              </div>
-
-            </div>
-
+            <p className="text-sm text-slate-500 mt-1">
+              Search by donor name, ID or phone number.
+            </p>
           </div>
+
+          {(search || bloodGroup || division) && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="text-sm font-semibold text-red-500 hover:text-red-700 transition"
+            >
+              Clear
+            </button>
+          )}
 
         </div>
 
-        {/* ================= RIGHT FORM ================= */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
-        <div className="lg:col-span-3 p-8 md:p-10">
+          {/* Search */}
 
-          <div className="mb-7">
+          <div className="lg:col-span-2">
 
-            <h2 className="text-2xl font-bold text-slate-900">
-              Donor Information
-            </h2>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Search donor
+            </label>
 
-            <p className="text-slate-500 mt-1">
-              Fill in your details to join our donor network.
-            </p>
+            <div className="relative">
 
-          </div>
-
-          {/* SUCCESS MESSAGE */}
-
-          {successMessage && (
-            <div className="mb-6 rounded-xl border border-green-200 bg-green-50 px-4 py-4 text-green-700 flex items-center gap-3">
-
-              <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center font-bold">
-                ✓
-              </div>
-
-              <div>
-                <p className="font-semibold">
-                  Registration Successful
-                </p>
-
-                <p className="text-sm">
-                  {successMessage}
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {/* ERROR MESSAGE */}
-
-          {errorMessage && (
-            <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-red-700 flex items-center gap-3">
-
-              <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center font-bold">
-                ✕
-              </div>
-
-              <div>
-                <p className="font-semibold">
-                  Registration Failed
-                </p>
-
-                <p className="text-sm">
-                  {errorMessage}
-                </p>
-              </div>
-
-            </div>
-          )}
-
-          {/* FORM */}
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-5"
-          >
-
-            {/* NAME */}
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Full Name
-              </label>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">
+                🔎
+              </span>
 
               <input
                 type="text"
-                placeholder="Enter your full name"
-                className={`input input-bordered w-full h-12 ${
-                  errors.name
-                    ? "border-red-400"
-                    : ""
-                }`}
-                {...register("name", {
-                  required: "Name is required",
-                  minLength: {
-                    value: 2,
-                    message:
-                      "Name must contain at least 2 characters",
-                  },
-                })}
+                placeholder="Name, donor ID or phone..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="input input-bordered w-full h-12 pl-11 rounded-xl bg-slate-50 border-slate-200 focus:border-indigo-500 focus:outline-none text-slate-900"
               />
 
-              {errors.name && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.name.message}
-                </p>
-              )}
-
             </div>
 
-            {/* BLOOD GROUP + DIVISION */}
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {/* Blood Group */}
 
-              {/* BLOOD GROUP */}
+          <div>
 
-              <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Blood group
+            </label>
 
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Blood Group
-                </label>
-
-                <select
-                  defaultValue=""
-                  className={`select select-bordered w-full h-12 ${
-                    errors.bloodGroup
-                      ? "border-red-400"
-                      : ""
-                  }`}
-                  {...register("bloodGroup", {
-                    required:
-                      "Blood group is required",
-                  })}
-                >
-
-                  <option value="" disabled>
-                    Select blood group
-                  </option>
-
-                  {bloodGroups.map((group) => (
-                    <option
-                      key={group}
-                      value={group}
-                    >
-                      {group}
-                    </option>
-                  ))}
-
-                </select>
-
-                {errors.bloodGroup && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.bloodGroup.message}
-                  </p>
-                )}
-
-              </div>
-
-              {/* DIVISION */}
-
-              <div>
-
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Division
-                </label>
-
-                <select
-                  defaultValue=""
-                  className={`select select-bordered w-full h-12 ${
-                    errors.division
-                      ? "border-red-400"
-                      : ""
-                  }`}
-                  {...register("division", {
-                    required:
-                      "Division is required",
-                  })}
-                >
-
-                  <option value="" disabled>
-                    Select division
-                  </option>
-
-                  {divisions.map((division) => (
-                    <option
-                      key={division}
-                      value={division}
-                    >
-                      {division}
-                    </option>
-                  ))}
-
-                </select>
-
-                {errors.division && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.division.message}
-                  </p>
-                )}
-
-              </div>
-
-            </div>
-
-            {/* PHONE */}
-
-            <div>
-
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Phone Number
-              </label>
-
-              <input
-                type="tel"
-                placeholder="01XXXXXXXXX"
-                className={`input input-bordered w-full h-12 ${
-                  errors.phone
-                    ? "border-red-400"
-                    : ""
-                }`}
-                {...register("phone", {
-                  required:
-                    "Phone number is required",
-                  pattern: {
-                    value:
-                      /^01[3-9]\d{8}$/,
-                    message:
-                      "Enter a valid Bangladeshi phone number",
-                  },
-                })}
-              />
-
-              {errors.phone && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.phone.message}
-                </p>
-              )}
-
-            </div>
-
-            {/* INFO */}
-
-            <div className="rounded-xl bg-slate-50 border border-slate-100 px-4 py-3">
-
-              <p className="text-sm text-slate-500">
-                🔒 Your information will be stored securely
-                and used only for connecting blood donors
-                with people who need them.
-              </p>
-
-            </div>
-
-            {/* SUBMIT */}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full h-13 rounded-xl text-white font-bold text-base border-0 transition-all duration-200 shadow-lg shadow-indigo-200 hover:-translate-y-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
-              style={{
-                background:
-                  "linear-gradient(135deg, #605DFF, #4037c9)",
-              }}
+            <select
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
+              className="select select-bordered w-full h-12 rounded-xl bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500 focus:outline-none"
             >
+              <option value="">
+                All blood groups
+              </option>
 
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
+              {bloodGroups.map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+            </select>
 
-                  <span className="loading loading-spinner loading-sm" />
+          </div>
 
-                  Registering...
+          {/* Division */}
 
-                </span>
-              ) : (
-                "Register as a Donor →"
-              )}
+          <div>
 
-            </button>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Division
+            </label>
 
-          </form>
+            <select
+              value={division}
+              onChange={(e) => setDivision(e.target.value)}
+              className="select select-bordered w-full h-12 rounded-xl bg-slate-50 border-slate-200 text-slate-900 focus:border-indigo-500 focus:outline-none"
+            >
+              <option value="">
+                All divisions
+              </option>
+
+              {divisions.map((div) => (
+                <option key={div} value={div}>
+                  {div}
+                </option>
+              ))}
+            </select>
+
+          </div>
 
         </div>
 
       </div>
 
-      {/* ================= BOTTOM TEXT ================= */}
+      {/* ==============================
+          MOBILE DONOR CARDS
+      ============================== */}
 
-      <div className="text-center mt-8">
+      <div className="grid grid-cols-1 gap-4 md:hidden">
 
-        <p className="text-sm text-slate-400">
-          Already registered?
-          <span className="text-indigo-600 font-semibold ml-1">
-            Thank you for being a lifesaver ❤️
-          </span>
-        </p>
+        {filteredDonors.length > 0 ? (
+
+          filteredDonors.map((donor) => (
+
+            <div
+              key={donor.id}
+              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm"
+            >
+
+              {/* Top */}
+
+              <div className="flex items-start justify-between gap-3">
+
+                <div className="flex items-center gap-3">
+
+                  <div className="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-red-600 font-black text-lg">
+                    {donor.bloodGroup}
+                  </div>
+
+                  <div>
+                    <h3 className="font-bold text-slate-900 text-lg">
+                      {donor.name}
+                    </h3>
+
+                    <p className="text-xs text-slate-400 mt-1">
+                      ID: {donor.id}
+                    </p>
+                  </div>
+
+                </div>
+
+                {donor.available ? (
+                  <span className="px-2.5 py-1 rounded-full bg-green-50 text-green-600 text-xs font-bold">
+                    Available
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold">
+                    Unavailable
+                  </span>
+                )}
+
+              </div>
+
+              {/* Information */}
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
+
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-slate-400">
+                    Division
+                  </p>
+
+                  <p className="text-sm font-semibold text-slate-800 mt-1">
+                    {donor.division}
+                  </p>
+                </div>
+
+                <div className="bg-slate-50 rounded-xl p-3">
+                  <p className="text-xs text-slate-400">
+                    Phone
+                  </p>
+
+                  <p className="text-sm font-semibold text-slate-800 mt-1 break-all">
+                    {donor.phone}
+                  </p>
+                </div>
+
+              </div>
+
+              {/* Contact */}
+
+              {donor.phone && (
+                <a
+                  href={`tel:${donor.phone}`}
+                  className="mt-4 w-full h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex items-center justify-center transition"
+                >
+                  📞 Contact Donor
+                </a>
+              )}
+
+            </div>
+
+          ))
+
+        ) : (
+
+          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
+
+            <div className="text-4xl mb-4">
+              🩸
+            </div>
+
+            <h3 className="text-lg font-bold text-slate-900">
+              No donors found
+            </h3>
+
+            <p className="text-slate-500 text-sm mt-2">
+              Try changing your search or filters.
+            </p>
+
+            <button
+              onClick={handleReset}
+              className="mt-5 px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition"
+            >
+              Reset Filters
+            </button>
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* ==============================
+          DESKTOP TABLE
+      ============================== */}
+
+      <div className="hidden md:block bg-white border border-slate-200 rounded-3xl shadow-sm overflow-hidden">
+
+        <div className="px-6 py-5 border-b border-slate-100">
+
+          <h2 className="text-xl font-bold text-slate-900">
+            Registered Donors
+          </h2>
+
+          <p className="text-sm text-slate-500 mt-1">
+            Available donor information
+          </p>
+
+        </div>
+
+        <div className="overflow-x-auto">
+
+          <table className="w-full">
+
+            <thead className="bg-slate-50">
+
+              <tr className="text-left">
+
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Donor
+                </th>
+
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Blood
+                </th>
+
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Division
+                </th>
+
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Phone
+                </th>
+
+                <th className="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">
+                  Status
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredDonors.length > 0 ? (
+
+                filteredDonors.map((donor) => (
+
+                  <tr
+                    key={donor.id}
+                    className="border-t border-slate-100 hover:bg-slate-50 transition"
+                  >
+
+                    {/* Donor */}
+
+                    <td className="px-6 py-5">
+
+                      <div className="flex items-center gap-3">
+
+                        <div className="w-11 h-11 rounded-xl bg-red-50 text-red-600 flex items-center justify-center font-black">
+                          {donor.bloodGroup}
+                        </div>
+
+                        <div>
+
+                          <p className="font-bold text-slate-900">
+                            {donor.name}
+                          </p>
+
+                          <p className="text-xs text-slate-400 mt-1">
+                            ID: {donor.id}
+                          </p>
+
+                        </div>
+
+                      </div>
+
+                    </td>
+
+                    {/* Blood */}
+
+                    <td className="px-6 py-5">
+
+                      <span className="inline-flex items-center justify-center min-w-12 px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold">
+                        {donor.bloodGroup}
+                      </span>
+
+                    </td>
+
+                    {/* Division */}
+
+                    <td className="px-6 py-5 text-slate-700 font-medium">
+                      {donor.division}
+                    </td>
+
+                    {/* Phone */}
+
+                    <td className="px-6 py-5">
+
+                      <a
+                        href={`tel:${donor.phone}`}
+                        className="text-indigo-600 font-semibold hover:text-indigo-800"
+                      >
+                        {donor.phone}
+                      </a>
+
+                    </td>
+
+                    {/* Status */}
+
+                    <td className="px-6 py-5">
+
+                      {donor.available ? (
+                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-50 text-green-600 text-sm font-semibold">
+                          <span className="w-2 h-2 bg-green-500 rounded-full" />
+                          Available
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-100 text-slate-500 text-sm font-semibold">
+                          <span className="w-2 h-2 bg-slate-400 rounded-full" />
+                          Unavailable
+                        </span>
+                      )}
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              ) : (
+
+                <tr>
+
+                  <td
+                    colSpan="5"
+                    className="px-6 py-16 text-center"
+                  >
+
+                    <div className="text-4xl mb-4">
+                      🩸
+                    </div>
+
+                    <h3 className="text-lg font-bold text-slate-900">
+                      No donors found
+                    </h3>
+
+                    <p className="text-slate-500 text-sm mt-2">
+                      Try changing your search or filters.
+                    </p>
+
+                  </td>
+
+                </tr>
+
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
 
       </div>
 
@@ -516,4 +518,4 @@ const DonorRegistry = ({
   );
 };
 
-export default DonorRegistry;
+export default DonorList;

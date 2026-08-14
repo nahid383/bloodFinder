@@ -6,29 +6,32 @@ const DonorList = ({
   donors,
   setDonors,
 }) => {
-  // Filter states
+  // ==============================
+  // FILTER STATES
+  // ==============================
+
   const [search, setSearch] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [division, setDivision] = useState("");
 
-  // Filter donors
+  // ==============================
+  // FILTER DONORS
+  // ==============================
+
   const filteredDonors = donors.filter((donor) => {
     const searchText = search.toLowerCase().trim();
 
     const name = donor.name?.toLowerCase() || "";
     const phone = donor.phone?.toString() || "";
 
-    // Search by name or phone
     const matchesSearch =
       name.includes(searchText) ||
       phone.includes(searchText);
 
-    // Filter by blood group
     const matchesBloodGroup =
       bloodGroup === "" ||
       donor.bloodGroup === bloodGroup;
 
-    // Filter by division
     const matchesDivision =
       division === "" ||
       donor.division === division;
@@ -40,7 +43,10 @@ const DonorList = ({
     );
   });
 
-  // Reset all filters
+  // ==============================
+  // RESET FILTERS
+  // ==============================
+
   const handleReset = () => {
     setSearch("");
     setBloodGroup("");
@@ -48,151 +54,571 @@ const DonorList = ({
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="w-full">
 
-      {/* Title + Donor Count */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-        <h2 className="text-3xl font-bold text-white">
-          Donor List
-        </h2>
+      {/* =========================================
+          HEADER
+      ========================================= */}
 
-        <div className="flex gap-2">
-          {/* Total Donors */}
-          <div className="badge badge-primary badge-lg">
-            Total: {donors.length}
+      <div className="mb-6 sm:mb-8">
+
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+
+          <div>
+            <p className="text-indigo-400 text-xs sm:text-sm font-bold uppercase tracking-widest mb-2">
+              BloodFinder
+            </p>
+
+            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+              Donor List
+            </h2>
+
+            <p className="text-slate-400 text-sm sm:text-base mt-2">
+              Find registered blood donors by name, blood group,
+              phone number or division.
+            </p>
           </div>
 
-          {/* Filtered Donors */}
-          <div className="badge badge-secondary badge-lg">
-            Showing: {filteredDonors.length}
+          {/* Donor statistics */}
+
+          <div className="flex flex-wrap gap-2">
+
+            <div className="px-3 sm:px-4 py-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20">
+              <p className="text-[10px] sm:text-xs text-slate-400">
+                Total Donors
+              </p>
+
+              <p className="text-lg sm:text-xl font-bold text-indigo-400">
+                {donors.length}
+              </p>
+            </div>
+
+            <div className="px-3 sm:px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20">
+              <p className="text-[10px] sm:text-xs text-slate-400">
+                Showing
+              </p>
+
+              <p className="text-lg sm:text-xl font-bold text-emerald-400">
+                {filteredDonors.length}
+              </p>
+            </div>
+
           </div>
+
         </div>
+
       </div>
 
-      {/* Search & Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      {/* =========================================
+          FILTER SECTION
+      ========================================= */}
 
-        {/* Search */}
-        <input
-          type="text"
-          placeholder="Search by name or phone..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="input input-bordered w-full"
-        />
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 shadow-xl">
 
-        {/* Blood Group */}
-        <select
-          value={bloodGroup}
-          onChange={(e) => setBloodGroup(e.target.value)}
-          className="select select-bordered w-full"
-        >
-          <option value="">
-            All Blood Groups
-          </option>
+        <div className="flex items-center gap-2 mb-5">
 
-          {bloodGroups.map((group) => (
-            <option key={group} value={group}>
-              {group}
-            </option>
-          ))}
-        </select>
+          <div className="w-9 h-9 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+            <span className="text-indigo-400 text-lg">
+              🔎
+            </span>
+          </div>
 
-        {/* Division */}
-        <select
-          value={division}
-          onChange={(e) => setDivision(e.target.value)}
-          className="select select-bordered w-full"
-        >
-          <option value="">
-            All Divisions
-          </option>
+          <div>
+            <h3 className="font-semibold text-white">
+              Search & Filter
+            </h3>
 
-          {divisions.map((div) => (
-            <option key={div} value={div}>
-              {div}
-            </option>
-          ))}
-        </select>
+            <p className="text-xs text-slate-500">
+              Narrow down the donor list
+            </p>
+          </div>
 
-        {/* Reset */}
-        <button
-          type="button"
-          onClick={handleReset}
-          className="btn btn-outline"
-        >
-          Reset Filters
-        </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+
+          {/* Search */}
+
+          <div className="sm:col-span-2 lg:col-span-1">
+
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Search
+            </label>
+
+            <input
+              type="text"
+              placeholder="Name or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="
+                input
+                w-full
+                bg-slate-800
+                border-slate-700
+                text-white
+                placeholder:text-slate-500
+                focus:border-indigo-500
+                focus:outline-none
+              "
+            />
+
+          </div>
+
+          {/* Blood Group */}
+
+          <div>
+
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Blood Group
+            </label>
+
+            <select
+              value={bloodGroup}
+              onChange={(e) => setBloodGroup(e.target.value)}
+              className="
+                select
+                select-bordered
+                w-full
+                bg-slate-800
+                border-slate-700
+                text-white
+                focus:border-indigo-500
+                focus:outline-none
+              "
+            >
+
+              <option value="">
+                All Blood Groups
+              </option>
+
+              {bloodGroups.map((group) => (
+                <option key={group} value={group}>
+                  {group}
+                </option>
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* Division */}
+
+          <div>
+
+            <label className="block text-xs font-medium text-slate-400 mb-2">
+              Division
+            </label>
+
+            <select
+              value={division}
+              onChange={(e) => setDivision(e.target.value)}
+              className="
+                select
+                select-bordered
+                w-full
+                bg-slate-800
+                border-slate-700
+                text-white
+                focus:border-indigo-500
+                focus:outline-none
+              "
+            >
+
+              <option value="">
+                All Divisions
+              </option>
+
+              {divisions.map((div) => (
+                <option key={div} value={div}>
+                  {div}
+                </option>
+              ))}
+
+            </select>
+
+          </div>
+
+          {/* Reset */}
+
+          <div className="flex items-end">
+
+            <button
+              type="button"
+              onClick={handleReset}
+              className="
+                btn
+                w-full
+                bg-slate-800
+                hover:bg-slate-700
+                border-slate-700
+                text-slate-300
+                hover:text-white
+              "
+            >
+              Reset Filters
+            </button>
+
+          </div>
+
+        </div>
+
       </div>
 
-      {/* Donor Table */}
-      <div className="overflow-x-auto">
-        <table className="table table-zebra">
+      {/* =========================================
+          MOBILE DONOR CARDS
+          Visible below md
+      ========================================= */}
 
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Blood Group</th>
-              <th>Division</th>
-              <th>Phone</th>
-              <th>Available</th>
-            </tr>
-          </thead>
+      <div className="md:hidden space-y-4">
 
-          <tbody>
-            {filteredDonors.length > 0 ? (
-              filteredDonors.map((donor) => (
-                <tr key={donor.id}>
+        {filteredDonors.length > 0 ? (
 
-                  {/* ID */}
-                  <th>{donor.id}</th>
+          filteredDonors.map((donor) => (
 
-                  {/* Name */}
-                  <td>{donor.name}</td>
+            <div
+              key={donor.id}
+              className="
+                bg-slate-900
+                border
+                border-slate-800
+                rounded-2xl
+                p-4
+                shadow-lg
+              "
+            >
 
-                  {/* Blood Group */}
-                  <td>
-                    <span className="badge badge-error">
+              {/* Top section */}
+
+              <div className="flex items-start justify-between gap-3">
+
+                <div className="flex items-center gap-3 min-w-0">
+
+                  <div className="
+                    w-11
+                    h-11
+                    shrink-0
+                    rounded-xl
+                    bg-red-500/10
+                    border
+                    border-red-500/20
+                    flex
+                    items-center
+                    justify-center
+                  ">
+                    <span className="text-red-400 font-bold">
                       {donor.bloodGroup}
                     </span>
-                  </td>
+                  </div>
 
-                  {/* Division */}
-                  <td>{donor.division}</td>
+                  <div className="min-w-0">
 
-                  {/* Phone */}
-                  <td>{donor.phone}</td>
+                    <h3 className="font-bold text-white truncate">
+                      {donor.name}
+                    </h3>
 
-                  {/* Availability */}
-                  <td>
-                    {donor.available ? (
-                      <span className="badge badge-success">
-                        Available
+                    <p className="text-xs text-slate-500 mt-1">
+                      ID: {donor.id}
+                    </p>
+
+                  </div>
+
+                </div>
+
+                {donor.available ? (
+                  <span className="
+                    shrink-0
+                    px-2.5
+                    py-1
+                    rounded-full
+                    bg-emerald-500/10
+                    border
+                    border-emerald-500/20
+                    text-emerald-400
+                    text-xs
+                    font-semibold
+                  ">
+                    Available
+                  </span>
+                ) : (
+                  <span className="
+                    shrink-0
+                    px-2.5
+                    py-1
+                    rounded-full
+                    bg-slate-800
+                    border
+                    border-slate-700
+                    text-slate-400
+                    text-xs
+                    font-semibold
+                  ">
+                    Unavailable
+                  </span>
+                )}
+
+              </div>
+
+              {/* Information */}
+
+              <div className="grid grid-cols-2 gap-3 mt-5">
+
+                <div className="bg-slate-800/70 rounded-xl p-3">
+
+                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">
+                    Division
+                  </p>
+
+                  <p className="text-sm font-medium text-slate-200 mt-1">
+                    {donor.division}
+                  </p>
+
+                </div>
+
+                <div className="bg-slate-800/70 rounded-xl p-3">
+
+                  <p className="text-[11px] text-slate-500 uppercase tracking-wide">
+                    Phone
+                  </p>
+
+                  <p className="text-sm font-medium text-slate-200 mt-1 break-all">
+                    {donor.phone}
+                  </p>
+
+                </div>
+
+              </div>
+
+            </div>
+
+          ))
+
+        ) : (
+
+          <div className="
+            bg-slate-900
+            border
+            border-slate-800
+            rounded-2xl
+            py-12
+            px-5
+            text-center
+          ">
+
+            <div className="text-4xl mb-4">
+              🩸
+            </div>
+
+            <h3 className="text-lg font-semibold text-white">
+              No donors found
+            </h3>
+
+            <p className="text-sm text-slate-500 mt-2">
+              Try changing your search or filter options.
+            </p>
+
+          </div>
+
+        )}
+
+      </div>
+
+      {/* =========================================
+          DESKTOP TABLE
+          Visible from md
+      ========================================= */}
+
+      <div className="
+        hidden
+        md:block
+        bg-slate-900
+        border
+        border-slate-800
+        rounded-2xl
+        overflow-hidden
+        shadow-xl
+      ">
+
+        <div className="overflow-x-auto">
+
+          <table className="table w-full">
+
+            <thead>
+
+              <tr className="border-b border-slate-800">
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  ID
+                </th>
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  Name
+                </th>
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  Blood Group
+                </th>
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  Division
+                </th>
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  Phone
+                </th>
+
+                <th className="bg-slate-900 text-slate-400 text-xs uppercase tracking-wide">
+                  Availability
+                </th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>
+
+              {filteredDonors.length > 0 ? (
+
+                filteredDonors.map((donor) => (
+
+                  <tr
+                    key={donor.id}
+                    className="
+                      border-b
+                      border-slate-800/70
+                      hover:bg-slate-800/50
+                      transition
+                    "
+                  >
+
+                    {/* ID */}
+
+                    <th className="text-slate-400 font-medium">
+                      {donor.id}
+                    </th>
+
+                    {/* Name */}
+
+                    <td className="text-white font-medium">
+                      {donor.name}
+                    </td>
+
+                    {/* Blood Group */}
+
+                    <td>
+
+                      <span className="
+                        inline-flex
+                        items-center
+                        justify-center
+                        min-w-[48px]
+                        px-3
+                        py-1.5
+                        rounded-lg
+                        bg-red-500/10
+                        border
+                        border-red-500/20
+                        text-red-400
+                        font-bold
+                        text-sm
+                      ">
+                        {donor.bloodGroup}
                       </span>
-                    ) : (
-                      <span className="badge badge-ghost">
-                        Unavailable
-                      </span>
-                    )}
+
+                    </td>
+
+                    {/* Division */}
+
+                    <td className="text-slate-300">
+                      {donor.division}
+                    </td>
+
+                    {/* Phone */}
+
+                    <td className="text-slate-300">
+                      {donor.phone}
+                    </td>
+
+                    {/* Availability */}
+
+                    <td>
+
+                      {donor.available ? (
+
+                        <span className="
+                          inline-flex
+                          px-3
+                          py-1.5
+                          rounded-full
+                          bg-emerald-500/10
+                          border
+                          border-emerald-500/20
+                          text-emerald-400
+                          text-xs
+                          font-semibold
+                        ">
+                          Available
+                        </span>
+
+                      ) : (
+
+                        <span className="
+                          inline-flex
+                          px-3
+                          py-1.5
+                          rounded-full
+                          bg-slate-800
+                          border
+                          border-slate-700
+                          text-slate-400
+                          text-xs
+                          font-semibold
+                        ">
+                          Unavailable
+                        </span>
+
+                      )}
+
+                    </td>
+
+                  </tr>
+
+                ))
+
+              ) : (
+
+                <tr>
+
+                  <td
+                    colSpan="6"
+                    className="text-center py-14"
+                  >
+
+                    <div className="text-4xl mb-3">
+                      🩸
+                    </div>
+
+                    <p className="text-lg font-semibold text-white">
+                      No donors found
+                    </p>
+
+                    <p className="text-sm text-slate-500 mt-1">
+                      Try changing your search or filter options.
+                    </p>
+
                   </td>
 
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="6"
-                  className="text-center py-8"
-                >
-                  No donors found
-                </td>
-              </tr>
-            )}
-          </tbody>
 
-        </table>
+              )}
+
+            </tbody>
+
+          </table>
+
+        </div>
+
       </div>
+
     </div>
   );
 };
