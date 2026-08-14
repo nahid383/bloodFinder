@@ -18,18 +18,20 @@ const AppRoutes = ({
   return (
     <Routes>
 
-      {/* =========================================
+      {/* =========================
           HOME
-      ========================================= */}
+      ========================= */}
 
       <Route
         path="/"
-        element={<Home donorCount={donors.length} />}
+        element={
+          <Home donorCount={donors.length} />
+        }
       />
 
-      {/* =========================================
-          DONOR REGISTRATION
-      ========================================= */}
+      {/* =========================
+          REGISTER
+      ========================= */}
 
       <Route
         path="/register"
@@ -45,9 +47,9 @@ const AppRoutes = ({
         }
       />
 
-      {/* =========================================
-          DONOR LIST
-      ========================================= */}
+      {/* =========================
+          DONORS
+      ========================= */}
 
       <Route
         path="/donors"
@@ -63,9 +65,9 @@ const AppRoutes = ({
         }
       />
 
-      {/* =========================================
+      {/* =========================
           FIND DONOR
-      ========================================= */}
+      ========================= */}
 
       <Route
         path="/find"
@@ -74,16 +76,12 @@ const AppRoutes = ({
 
             <div className="space-y-6 sm:space-y-8">
 
-              {/* Search Form */}
-
               <DonorFind
                 bloodGroups={bloodGroups}
                 divisions={divisions}
                 requestedBloodData={requestedBloodData}
                 setRequestedBloodData={setRequestedBloodData}
               />
-
-              {/* Results */}
 
               <div id="donor-results">
                 <AIScoreResult
@@ -97,9 +95,9 @@ const AppRoutes = ({
         }
       />
 
-      {/* =========================================
-          404 PAGE
-      ========================================= */}
+      {/* =========================
+          404
+      ========================= */}
 
       <Route
         path="*"
@@ -108,16 +106,12 @@ const AppRoutes = ({
 
             <div className="text-center">
 
-              <h1 className="text-6xl sm:text-7xl font-black text-slate-900">
+              <h1 className="text-6xl font-black text-slate-900">
                 404
               </h1>
 
-              <p className="text-slate-500 mt-3 text-lg">
+              <p className="text-slate-500 mt-3">
                 Page not found
-              </p>
-
-              <p className="text-slate-400 text-sm mt-2">
-                The page you are looking for doesn't exist.
               </p>
 
               <Link
@@ -131,11 +125,8 @@ const AppRoutes = ({
                   py-3
                   rounded-xl
                   bg-indigo-600
-                  hover:bg-indigo-700
                   text-white
                   font-semibold
-                  transition
-                  active:scale-95
                 "
               >
                 ← Go Home
